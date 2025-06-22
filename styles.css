@@ -1,6 +1,6 @@
 /* === FUENTE PERSONALIZADA === */
 @font-face {
-  font-family: 'Swis721-bold';
+  font-family: 'Swis721';
   src: url('fonts/Swis721-Blk-BT.woff2') format('woff2'),
        url('fonts/Swis721-Blk-BT.woff') format('woff');
   font-weight: bold;
@@ -99,32 +99,24 @@ body, html {
   left: 10vw;
   font-size: 10vh;
   font-weight: bold;
-  font-family: 'Swis721-Bold', sans-serif;
+  font-family: 'Swis721', sans-serif;
   color: white;
-  z-index: 1002;
+  z-index: 10;
 }
 
 /* === ELEMENTOS DECORATIVOS === */
 .center-box {
-  width: 5vw;
+  width: 5vh;
   height: 10vh;
   background-color: rgba(0, 0, 255, 0.582);
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  z-index: 10;
 }
 
-/* === FONDO DE IMÁGENES === */
-.image-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 0;
-}
+
 
 .center-image {
   position: absolute;
@@ -136,7 +128,7 @@ body, html {
   opacity: 0;
   transition: opacity 1.5s ease-in-out, transform 0.2s ease-out;
   transform: translate(0, 0);
-  z-index: -0;
+  z-index: 0;
 }
 
 .center-image.active {
@@ -168,32 +160,27 @@ body, html {
 /* === MENÚ === */
 .menu-container {
   position: absolute;
-  top: 200px;
-  left: 200px;
+  top: 20px;
+  left: 20px;
   z-index: 1001;
 }
 
-.menu {
-  position: absolute;
-  top: 50px;
-  left: 0;
-  width: 220px;
-  background: rgba(192, 192, 192, 0.178);
-  padding: 10px;
-  border-radius: 5px;
-  display: none;
-  font-family: "Swis721", sans-serif;
-  font-weight: bold;
+/* Desktop: Hover */
+@media (min-width: 769px) {
+  .menu-container:hover .menu {
+    display: block;
+  }
 }
 
-.menu a {
-  padding: 20px;
-  text-decoration: none;
-  font-size: 25px;
-  color: rgb(255, 255, 255);
-  display: block;
-  cursor: pointer;
-  transition: background 1.3s, color 0.3s;
+/* Mobile: Click activa */
+@media (max-width: 768px) {
+  .menu {
+    display: none !important;
+  }
+
+  .menu.active {
+    display: block !important;
+  }
 }
 
 .menu a:hover {
@@ -276,4 +263,14 @@ body, html {
   .menu-btn {
     font-size: 30px;
   }
+}
+/* === FONDO DE IMÁGENES === */
+.image-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
 }
