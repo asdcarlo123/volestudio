@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diseño de Layout</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Estilos generales de textos */
+    .text, .page-number, .footer .title, .footer .date {
+      color: white;
+      font-family: "Swis721", sans-serif;
+    }
+    
+    /* Estilos del menú */
+    .menu-container {
+      position: absolute;
+      top: 200px;
+      left: 200px;
+      z-index: 1001;
+    }
+    .menu {
+      position: absolute;
+      top: 50px;
+      left: 0;
+      width: 220px;
+      background: rgba(192, 192, 192, 0.178);
+      padding: 10px;
+      border-radius: 5px;
+      display: none;
+      font-family: "Swis721", sans-serif;
+      font-weight: bold;
+    }
+    .menu a {
+      padding: 20px;
+      text-decoration: none;
+      font-size: 25px;
+      color: rgb(255, 255, 255);
+      display: block;
+      cursor: pointer;
+      transition: background 1.3s, color .3s;
+    }
+    .menu a:hover {
+      background: rgba(223, 223, 223, 0.527);
+      color: white;
+    }
+    .menu-btn {
+      font-size: 40px;
+      font-weight: bold;
+      font-family: 'Swis721', sans-serif;
+      color: rgb(255, 255, 255);
+      cursor: pointer;
+    }
+    .menu-container:hover .menu {
+      display: block;
+    }
+    
+    /* Contenedor de imágenes de fondo */
+    .image-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      z-index: 0;
+    }
+    .center-image {
+      position: absolute;
+      width: 110%;    /* Escalado para evitar bordes */
+      height: 110%;
+      left: -5%;      /* Centrado horizontalmente */
+      top: -5%;       /* Centrado verticalmente */
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.5s ease-in-out, transform 0.2s ease-out;
+      transform: translate(0, 0);
+    }
+    .center-image.active {
+      opacity: 1;
+    }
+    
+    /* Contenedor de contenido para slides adicionales */
+    .slide-container {
+      display: none;
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .slide-container.active {
+      display: block;
+    }
+    
+    /* (Opcional) Estilos para el contenido de los slides */
+    .slide h1 {
+      font-size: 50px;
+    }
+    .slide p {
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Menú -->
+  <div class="menu-container">
+    <div class="menu-btn">☰ MENU</div>
+    <div id="menu" class="menu">
+      <a href="#" data-slide="inicio">INICIO</a>
+      <a href="#" data-slide="proyectos">PROYECTOS</a>
+      <a href="#" data-slide="tecnologia">TECNOLOGÍA</a>
+      <a href="#" data-slide="contacto">CONTACTO</a>
+      <a href="#" data-slide="nosotros">NOSOTROS</a>
+    </div>
+  </div>
+  
+  <!-- Contenedor de INICIO (contenido original sin cambios) -->
+  <div id="inicio-content" class="container" style="position: relative; z-index: 1;">
+    <div class="text text-left">Todos los derechos reservados</div>
+    <div class="text text-right">VOL-TEC Arquitectos</div>
+    <div class="text text-top">Southside Exchange 501</div>
+    <div class="text text-bottom">VOL-TEC E.I.R.L. 2025</div>
+    <div class="page-number">1</div>
+    <div class="footer">
+      <div class="title">MARZO 2025</div>
+      <div class="date">MARCH 2025</div>
+    </div>
+    <div class="big-title">VOL-TEC</div>
+  </div>
+  
+  <!-- Slides adicionales (ocultos inicialmente) -->
+  <div id="slide-proyectos" class="slide-container">
+    <div class="slide">
+        <div class="text text-left">Todos los derechos reservados</div>
+    <div class="text text-right">VOL-TEC Arquitectos</div>
+    <div class="text text-top">Southside Exchange 501</div>
+    <div class="text text-bottom">VOL-TEC E.I.R.L. 2025</div>
+    <div class="footer">
+        <div class="title">PROYECTOS</div>
+      <div class="date">MARCH 2025</div>
+    </div>
+      <p>Contenido y detalles de proyectos realizados.</p>
+      <div class="big-title">PY</div>
+    </div>
+  </div>
+  <div id="slide-tecnologia" class="slide-container">
+    <div class="slide">
+      <h1>Tecnología</h1>
+      <p>Innovaciones y soluciones tecnológicas aplicadas.</p>
+    </div>
+  </div>
+  <div id="slide-contacto" class="slide-container">
+    <div class="slide">
+      <h1>Contacto</h1>
+      <p>Ponte en contacto con nosotros para más información.</p>
+    </div>
+  </div>
+  <div id="slide-nosotros" class="slide-container">
+    <div class="slide">
+      <h1>Nosotros</h1>
+      <p>Conoce más sobre nuestro equipo y filosofía.</p>
+    </div>
+  </div>
+  
+  <!-- Contenedor de imágenes de fondo -->
+  <div class="image-container">
+    <img src="DSC_6901.png" alt="Imagen 1" class="center-image active">
+    <img src="DSC_6596.png" alt="Imagen 2" class="center-image">
+    <img src="DSC_6595.png" alt="Imagen 3" class="center-image">
+  </div>
+  <div class="gallery-grid">
+  <img src="proyecto1.jpg" alt="Proyecto 1">
+  <img src="proyecto2.jpg" alt="Proyecto 2">
+  <img src="proyecto3.jpg" alt="Proyecto 3">
+  <img src="proyecto4.jpg" alt="Proyecto 4">
+  <img src="proyecto5.jpg" alt="Proyecto 5">
+  <img src="proyecto6.jpg" alt="Proyecto 6">
+  </div>
+
+  
+  <script>
+    // Rotación automática de fondo solo para INICIO
+    let autoInterval = setInterval(autoRotate, 5000);
+    const images = document.querySelectorAll(".center-image");
+    let autoIndex = 0;
+    
+    function autoRotate() {
+      // Si el contenido de INICIO está visible, se rota la imagen de fondo
+      if (document.getElementById('inicio-content').style.display !== 'none') {
+        images[autoIndex].classList.remove("active");
+        autoIndex = (autoIndex + 1) % images.length;
+        images[autoIndex].classList.add("active");
+      }
+    }
+    
+    // Efecto de parallax: solo la imagen activa se mueve
+    document.addEventListener("mousemove", function (event) {
+      const activeImage = document.querySelector(".center-image.active");
+      if (!activeImage) return;
+      const { clientX, clientY } = event;
+      const moveX = (0.5 - clientX / window.innerWidth) * 50;
+      const moveY = (0.5 - clientY / window.innerHeight) * 50;
+      activeImage.style.transform = `translate(${moveX}px, ${moveY}px)`;
+    });
+    
+    // Mapeo de slide a imagen de fondo:
+    // INICIO -> 0, PROYECTOS -> 1, TECNOLOGÍA -> 2, CONTACTO -> 0, NOSOTROS -> 1
+    const slideToImage = {
+      "inicio": 0,
+      "proyectos": 1,
+      "tecnologia": 2,
+      "contacto": 0,
+      "nosotros": 1
+    };
+    
+    // Evento para los enlaces del menú
+    const menuLinks = document.querySelectorAll(".menu a");
+    menuLinks.forEach(link => {
+      link.addEventListener("click", function(e) {
+        e.preventDefault();
+        // Detener la rotación automática al seleccionar un slide manualmente
+        clearInterval(autoInterval);
+        
+        const slideId = this.getAttribute("data-slide");
+        // Si se selecciona "inicio", mostramos el contenido original; sino, lo ocultamos
+        if (slideId === "inicio") {
+          document.getElementById('inicio-content').style.display = 'block';
+        } else {
+          document.getElementById('inicio-content').style.display = 'none';
+        }
+        
+        // Ocultar todos los slides adicionales
+        document.querySelectorAll(".slide-container").forEach(slide => {
+          slide.classList.remove("active");
+        });
+        // Mostrar el slide adicional si no es INICIO
+        if (slideId !== "inicio") {
+          const activeSlide = document.getElementById("slide-" + slideId);
+          if (activeSlide) activeSlide.classList.add("active");
+        }
+        
+        // Cambiar la imagen de fondo activa según el mapeo
+        const imageIndex = slideToImage[slideId];
+        images.forEach((img, idx) => {
+          img.classList.remove("active");
+          // Reiniciamos la transformación
+          img.style.transform = "translate(0, 0)";
+          if (idx === imageIndex) {
+            img.classList.add("active");
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
