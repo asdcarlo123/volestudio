@@ -1,8 +1,8 @@
 /* === FUENTE PERSONALIZADA === */
 @font-face {
-  font-family: 'Swis721';
-  src: url('fonts/Swis721-Blk-BT.woff2') format('woff2'),
-       url('fonts/Swis721-Blk-BT.woff') format('woff');
+  font-family: 'Swis721 Blk BT';
+  src: url('Swis721-Blk-BT.woff2') format('woff2'),
+       url('Swis721-Blk-BT.woff') format('woff');
   font-weight: bold;
   font-style: normal;
 }
@@ -36,7 +36,7 @@ body, html {
 /* === TEXTOS GENERALES === */
 .text, .page-number, .footer .title, .footer .date {
   color: white;
-  font-family: 'Swis721', sans-serif;
+  font-family: 'Swis721 Blk BT', sans-serif;
   font-weight: bold;
 }
 
@@ -103,7 +103,7 @@ body, html {
   left: 10vw;
   font-size: 10vh;
   font-weight: bold;
-  font-family: 'Swis721', sans-serif;
+  font-family: 'Swis721 Blk BT', sans-serif;
   color: white;
   z-index: 10;
 }
@@ -111,7 +111,7 @@ body, html {
 .center-box {
   width: 5vh;
   height: 10vh;
-  background-color: rgba(0, 0, 255, 0.582);
+  background-color: rgba(0, 0, 255);
   position: absolute;
   top: 50%;
   left: 50%;
@@ -176,17 +176,10 @@ body, html {
   z-index: 1001;
 }
 
-.menu-container {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 1001;
-}
-
 .menu-btn {
   font-size: 30px;
   font-weight: bold;
-  font-family: 'Swis721', sans-serif;
+  font-family: 'Swis721 Blk BT', sans-serif;
   color: white;
   cursor: pointer;
   margin-bottom: 10px;
@@ -197,7 +190,7 @@ body, html {
   background: rgba(192, 192, 192, 0.178);
   padding: 10px;
   border-radius: 5px;
-  font-family: 'Swis721', sans-serif;
+  font-family: 'Swis721 Blk BT', sans-serif;
   font-weight: bold;
   display: none;
 }
@@ -220,6 +213,7 @@ body, html {
   background: rgba(223, 223, 223, 0.527);
   color: white;
 }
+
 /* === SLIDES === */
 .slide h1 {
   font-size: 50px;
