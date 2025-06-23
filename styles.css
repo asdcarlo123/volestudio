@@ -21,10 +21,16 @@ body, html {
   font-family: 'Times New Roman', serif;
 }
 
-.container {
+.container, .slide-container {
   position: relative;
   width: 100vw;
   height: 100vh;
+}
+
+.container:not(.active),
+.slide-container:not(.active),
+#galeria:not(.active) {
+  display: none;
 }
 
 /* === TEXTOS GENERALES === */
@@ -67,7 +73,6 @@ body, html {
   text-align: center;
 }
 
-/* === PÁGINA Y PIE DE PÁGINA === */
 .page-number {
   position: absolute;
   top: 2vh;
@@ -92,7 +97,6 @@ body, html {
   font-family: 'Times New Roman', serif;
 }
 
-/* === TÍTULO PRINCIPAL === */
 .big-title {
   position: absolute;
   bottom: 1vh;
@@ -104,7 +108,6 @@ body, html {
   z-index: 10;
 }
 
-/* === ELEMENTOS DECORATIVOS === */
 .center-box {
   width: 5vh;
   height: 10vh;
@@ -116,7 +119,15 @@ body, html {
   z-index: 10;
 }
 
-
+.image-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 0;
+}
 
 .center-image {
   position: absolute;
@@ -165,56 +176,51 @@ body, html {
   z-index: 1001;
 }
 
-/* Desktop: Hover */
-@media (min-width: 769px) {
-  .menu-container:hover .menu {
-    display: block;
-  }
+.menu-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
 }
 
-/* Mobile: Click activa */
-@media (max-width: 768px) {
-  .menu {
-    display: none !important;
-  }
+.menu-btn {
+  font-size: 30px;
+  font-weight: bold;
+  font-family: 'Swis721', sans-serif;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
 
-  .menu.active {
-    display: block !important;
-  }
+.menu {
+  width: 220px;
+  background: rgba(192, 192, 192, 0.178);
+  padding: 10px;
+  border-radius: 5px;
+  font-family: 'Swis721', sans-serif;
+  font-weight: bold;
+  display: none;
+}
+
+.menu.show {
+  display: block;
+}
+
+.menu a {
+  padding: 20px;
+  text-decoration: none;
+  font-size: 25px;
+  color: white;
+  display: block;
+  cursor: pointer;
+  transition: background 1.3s, color 0.3s;
 }
 
 .menu a:hover {
   background: rgba(223, 223, 223, 0.527);
   color: white;
 }
-
-.menu-btn {
-  font-size: 40px;
-  font-weight: bold;
-  font-family: 'Swis721', sans-serif;
-  color: rgb(255, 255, 255);
-  cursor: pointer;
-}
-
-.menu-container:hover .menu {
-  display: block;
-}
-
 /* === SLIDES === */
-.slide-container {
-  display: none;
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  height: 100vh;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.slide-container.active {
-  display: block;
-}
-
 .slide h1 {
   font-size: 50px;
 }
@@ -225,7 +231,7 @@ body, html {
 
 /* === MEDIA QUERY: MÓVIL === */
 @media (max-width: 768px) {
-  .text {
+  .text, .text-left, .text-right {
     font-size: 1.8vh;
   }
 
@@ -247,11 +253,6 @@ body, html {
     bottom: 2vh;
   }
 
-  .text-left,
-  .text-right {
-    font-size: 1.8vh;
-  }
-
   .menu {
     width: 180px;
   }
@@ -263,14 +264,4 @@ body, html {
   .menu-btn {
     font-size: 30px;
   }
-}
-/* === FONDO DE IMÁGENES === */
-.image-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 0;
 }
