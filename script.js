@@ -46,7 +46,14 @@ document.querySelectorAll(".menu a").forEach(link => {
       const slide = document.getElementById("slide-" + slideId);
       if (slide) slide.classList.add("active");
     }
-
+    //mostrar galeria solo el proyecto
+    const galeria = document.getElementById("galeria-proyectos");
+    if (slideId === "proyectos") {
+      galeria.style.display = "grid";
+      document.body.classList.add("proyectos-active");
+    } else {
+      galeria.style.display = "none";
+    }
     galeria.classList.toggle("active", slideId === "proyectos");
 
     images.forEach((img, idx) => {

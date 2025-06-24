@@ -150,9 +150,10 @@ body, html {
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  gap: 10px;
   margin-top: 40px;
   padding: 20px;
+  z-index: 1000;
 }
 
 .gallery-grid img {
@@ -222,6 +223,9 @@ body, html {
 .slide p {
   font-size: 20px;
 }
+body.proyectos-active {
+  background: white;
+}
 
 /* === MEDIA QUERY: MÓVIL === */
 @media (max-width: 768px) {
@@ -259,9 +263,9 @@ body, html {
     font-size: 30px;
   }
   .center-image{
-    top: 0;
+    top: 10hv;
     left: 0;
-    width: 110%;
-    height: 110%;
+    width: 100%;
+    height: 100%;
   }
 }
