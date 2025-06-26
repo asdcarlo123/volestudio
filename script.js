@@ -3,6 +3,8 @@ const galeria = document.getElementById("galeria");
 const menuBtn = document.querySelector(".menu-btn");
 const menuContainer = document.querySelector(".menu-container");
 const menu = document.getElementById("menu");
+const imageContainer = document.querySelector('.image-container');
+
 
 const slideToImage = {
   "inicio": 0,
@@ -49,13 +51,16 @@ document.querySelectorAll(".menu a").forEach(link => {
     //mostrar galeria solo el proyecto
     const galeria = document.getElementById("galeria-proyectos");
     if (slideId === "proyectos") {
-      galeria.style.display = "grid";
-      document.body.classList.add("proyectos-active");
-    } else {
-      galeria.style.display = "none";
-    }
-    galeria.classList.toggle("active", slideId === "proyectos");
-
+    galeria.style.display = "grid";
+    galeria.classList.add("active");
+    document.body.classList.add("proyectos-active"); 
+     imageContainer.style.display = "none";
+  } else {
+    galeria.style.display = "none";
+    galeria.classList.remove("active");
+    document.body.classList.remove("proyectos-active"); 
+    imageContainer.style.display = "block";
+  }
     images.forEach((img, idx) => {
       img.classList.remove("active");
       img.style.transform = "translate(0, 0)";
