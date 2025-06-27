@@ -57,8 +57,8 @@ body, html {
 }
 
 .text-right {
-  right: 50px;
-  top: 55%;
+  right: 10px;
+  top: 60%;
   transform: translateY(-50%) rotate(90deg);
   transform-origin: right center;
   z-index: 10;
