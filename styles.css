@@ -35,7 +35,7 @@ body, html {
 
 /* === TEXTOS GENERALES === */
 .text, .page-number, .footer .title, .footer .date {
-  color: white;
+  color: rgb(255, 255, 255);
   font-family: 'Swis721 Blk BT', sans-serif;
   font-weight: bold;
   z-index: 10;
@@ -50,7 +50,7 @@ body, html {
 
 .text-left {
   left: 10px;
-  top: 60%;
+  top: 50%;
   transform: translateY(-50%) rotate(-90deg);
   transform-origin: left center;
   z-index: 10;
@@ -58,7 +58,7 @@ body, html {
 
 .text-right {
   right: 10px;
-  top: 60%;
+  top: 50%;
   transform: translateY(-50%) rotate(90deg);
   transform-origin: right center;
   z-index: 10;
@@ -78,39 +78,46 @@ body, html {
   text-align: center;
   z-index: 10;
 }
-
-.page-number {
-  position: absolute;
-  top: 2vh;
-  left: 2vw;
-  font-size: 2vh;
-  z-index: 10;
+/* detalles de contacto */
+.footer-contacto {
+  width: 100%;
+  background: rgba(207, 207, 207, 0.26);
+  color: white;
+  padding: 0 0 4px 0;
+  text-align: center;
+  position: fixed;
+  bottom: 12vh;
+  left: 0;
+  z-index: 15;
+  font-family: 'sWis721', sans-serif;
 }
 
-.footer {
-  position: absolute;
-  bottom: 4vh;
-  right: 10vw;
-  text-align: right;
-  z-index: 10;
+.footer-contacto ul {
+  list-style: none;
+  padding: 0;
+  margin: 2px 0 0 0;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
 }
 
-.footer .title {
-  font-size: 2vh;
-  z-index: 10;
+.footer-contacto li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.2vh;
+  font-style: normal;
+  font-weight: normal;
+  transition: color 0.3s;
 }
 
-.footer .date {
-  font-size: 1.8vh;
-  color: gray;
-  font-family: 'Times New Roman', serif;
-  z-index: 10;
-} 
+.footer-contacto li a:hover {
+  color: rgb(0, 0, 255);
+}
 
 .big-title {
   position: absolute;
-  bottom: 1vh;
-  left: 10vw;
+  bottom: 0vh;
+  left: 5vw;
   font-size: 10vh;
   font-weight: bold;
   font-family: 'Swis721 Blk BT', sans-serif;
@@ -159,17 +166,16 @@ body, html {
 /* === GALERÍA === */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 10px;
-  margin-top: 40px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(50vh, 1fr));
+  gap: 5px;
+  padding: 5px;
   z-index: 10;
 }
 
 .gallery-grid img {
   width: 100%;
-  height: auto;
-  border-radius: 10px;
+  object-fit: cover;
+  height: 100%;
   transition: transform 0.3s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
   cursor: pointer;
@@ -199,10 +205,10 @@ body, html {
 .menu {
   width: 220px;
   background: rgba(192, 192, 192, 0.178);
-  padding: 10px;
+  padding: 0px;
   border-radius: 5px;
   font-family: 'Swis721 Blk BT', sans-serif;
-  font-weight: bold;
+  font-weight: normal;
   display: none;
 }
 
@@ -213,11 +219,12 @@ body, html {
 .menu a {
   padding: 20px;
   text-decoration: none;
-  font-size: 25px;
+  font-size: 18px;
   color: white;
   display: block;
   cursor: pointer;
   transition: background 1.3s, color 0.3s;
+  font-style: normal;
 }
 
 .menu a:hover {
@@ -240,15 +247,20 @@ body.proyectos-active {
 /* === MEDIA QUERY: MÓVIL === */
 @media (max-width: 768px) {
   .text, .text-left, .text-right {
-    font-size: 1.8vh;
+    font-size: 1.2vh;
+    font-style: normal;
   }
 
+  .text-bottom {
+    bottom: 18vh;
+  }
   .page-number {
     font-size: 2.5vh;
   }
-
-  .footer .title {
-    font-size: 2.5vh;
+  .footer {
+    bottom: 15vh;
+    right: 5vw;
+    font-size: 1.5vh; 
   }
 
   .footer .date {
@@ -259,23 +271,35 @@ body.proyectos-active {
     font-size: 6vh;
     left: 5vw;
     bottom: 20vh;
+    font-style: bold;
   }
 
   .menu {
     width: 180px;
-  }
-
-  .menu a {
     font-size: 18px;
   }
 
+  .menu a {
+    font-size: 15px;
+  }
+
   .menu-btn {
-    font-size: 30px;
+    font-size: 15px;
   }
   .center-image{
-    top: 20hv;
+    top: -10%;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 110%;
+    height: 110%;
+  }
+  .center-image.center-image.active {
+    top: -10%;
+  }
+  .footer-contacto li a {
+    font-size: 1.2vh;
+  }
+  .footer-contacto {
+    bottom: 12vh;
   }
 }
+
