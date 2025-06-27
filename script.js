@@ -51,7 +51,7 @@ document.querySelectorAll(".menu a").forEach(link => {
     //mostrar galeria solo el proyecto
     const galeria = document.getElementById("galeria-proyectos");
     if (slideId === "proyectos") {
-    galeria.style.display = "grid";
+    galeria.style.display = "flex";
     galeria.classList.add("active");
     document.body.classList.add("proyectos-active"); 
      imageContainer.style.display = "none";
