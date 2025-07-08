@@ -48,18 +48,21 @@ document.querySelectorAll(".menu a").forEach(link => {
       const slide = document.getElementById("slide-" + slideId);
       if (slide) slide.classList.add("active");
     }
-    //mostrar galeria solo el proyecto
+    //mostrar galeria solo en el proyecto
     const galeria = document.getElementById("galeria-proyectos");
     if (slideId === "proyectos") {
     galeria.style.display = "flex";
     galeria.classList.add("active");
     document.body.classList.add("proyectos-active"); 
      imageContainer.style.display = "none";
+     imageContainer.style.zIndex = "-1";
   } else {
     galeria.style.display = "none";
     galeria.classList.remove("active");
     document.body.classList.remove("proyectos-active"); 
     imageContainer.style.display = "block";
+    imageContainer.style.zIndex = "0";
+  
   }
     images.forEach((img, idx) => {
       img.classList.remove("active");
