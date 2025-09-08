@@ -1,125 +1,189 @@
-// ====== CONFIG ======
-const ASSETS_ROOT = "./assets/projects";      // raíz de proyectos (carpetas)
-const API_ENDPOINT = "/api/projects";         // si tienes backend (Express/Netlify/CF Worker)
-const FOLDERS_FALLBACK = [                    // por si no hay API ni manifest
-  "RU-SM","B-SJL","CASA-XD","LM-H-1","Antena","VIS"
-];
+// =====================================================
+// ================   CONFIGURACIÓN   ==================
+// =====================================================
+const ASSETS_ROOT      = "./assets/projects";
+const API_ENDPOINT     = "/api/projects";
+const FOLDERS_FALLBACK = ["RU-SM","B-SJL","CASA-XD","LM-H-1","Antena","VIS"];
 
-// ====== ELEMENTOS BASE ======
-const images = document.querySelectorAll(".center-image");
-const menuBtn = document.querySelector(".menu-btn");
-const menuContainer = document.querySelector(".menu-container");
-const menu = document.getElementById("menu");
+// Homepage (portada)
+const HOMEPAGE_ROOT     = "./assets/Homepage";
+const HOMEPAGE_MANIFEST = `${HOMEPAGE_ROOT}/manifest.json`;
+
+const bust = () => `?v=${Date.now()}`;
+
+
+// =====================================================
+// ================   ELEMENTOS BASE   =================
+// =====================================================
+let images = []; // portada; se llena dinámicamente
+const menuBtn        = document.querySelector(".menu-btn");
+const menuContainer  = document.querySelector(".menu-container");
+const menu           = document.getElementById("menu");
 const imageContainer = document.querySelector(".image-container");
 
-// ====== MAPA (qué imagen mostrar por sección) ======
 const slideToImage = { "inicio":0, "proyectos":1, "tecnologia":2, "contacto":0, "nosotros":1 };
 
-// ====== ROTACIÓN AUTOMÁTICA DE PORTADA ======
+
+// =====================================================
+// ========  ROTACIÓN AUTOMÁTICA (PORTADA)  ============
+// =====================================================
 let autoIndex = 0;
-let autoInterval = setInterval(autoRotate, 5000);
+let autoInterval = setInterval(autoRotate, 2000);
+
 function autoRotate() {
   const inicio = document.getElementById("inicio-content");
-  if (inicio && inicio.classList.contains("active")) {
-    images[autoIndex]?.classList.remove("active");
-    autoIndex = (autoIndex + 1) % images.length;
-    images[autoIndex]?.classList.add("active");
-  }
+  if (!(inicio && inicio.classList.contains("active"))) return;
+  if (!images.length) return;
+  images[autoIndex]?.classList.remove("active");
+  autoIndex = (autoIndex + 1) % images.length;
+  images[autoIndex]?.classList.add("active");
 }
 
-// ====== PARALLAX SUAVE ======
+
+// =====================================================
+// ================   PARALLAX SUAVE   =================
+// =====================================================
 document.addEventListener("mousemove", (e) => {
   const activeImage = document.querySelector(".center-image.active");
   if (!activeImage) return;
   const moveX = (0.5 - e.clientX / window.innerWidth) * 50;
   const moveY = (0.5 - e.clientY / window.innerHeight) * 50;
-  activeImage.style.transform = `translate(${moveX}px, ${moveY}px)`;
+  activeImage.style.setProperty('--tx', `${moveX}px`);
+  activeImage.style.setProperty('--ty', `${moveY}px`);
 }, { passive: true });
 
-// ====== HELPERS ======
-const fmtM2 = (n) => {
-  try { return `${parseInt(n, 10).toLocaleString("es-PE")} m²`; }
-  catch { return `${n} m²`; }
-};
-const get = async (url) => {
-  const res = await fetch(url, { cache: "no-store" });
-  if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
-  return res.json();
-};
+function resetParallax() {
+  document.querySelectorAll(".center-image").forEach(img => {
+    img.style.setProperty('--tx', '0px');
+    img.style.setProperty('--ty', '0px');
+  });
+}
 
-// ====== CARGA DE PROYECTOS (API -> manifest -> fallback) ======
+
+// =====================================================
+// ===================== HELPERS =======================
+// =====================================================
+const fmtM2 = (n) => { try { return `${parseInt(n, 10).toLocaleString("es-PE")} m²`; } catch { return `${n} m²`; } };
+
+async function fetchJSON(url) {
+  const res = await fetch(url + (url.includes("?") ? "" : bust()), { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status} @ ${url}`);
+  return res.json();
+}
+async function tryReadJSON(url) { try { return await fetchJSON(url); } catch { return null; } }
+
+function filenameToTitle(name) {
+  return (name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+
+// =====================================================
+// ====== CARGA DE HOMEPAGE (manifest.json) ============
+// =====================================================
+async function loadHomepageImages(){
+  if (!imageContainer) return;
+
+  let list = null;
+  const data = await tryReadJSON(HOMEPAGE_MANIFEST);
+  if (Array.isArray(data)) list = data;
+  else if (data && Array.isArray(data.images)) list = data.images;
+
+  if (Array.isArray(list) && list.length) {
+    imageContainer.innerHTML = "";
+    list.forEach((name, idx) => {
+      const src = `${HOMEPAGE_ROOT}/${name}`;
+      const img = document.createElement("img");
+      img.src = src;
+      img.alt = filenameToTitle(name) || `Imagen ${idx+1}`;
+      img.className = "center-image" + (idx === 0 ? " active" : "");
+      img.loading = idx === 0 ? "eager" : "lazy";
+      img.decoding = "async";
+      imageContainer.appendChild(img);
+    });
+  }
+
+  images = Array.from(document.querySelectorAll(".center-image"));
+  autoIndex = 0;
+  images.slice(1).forEach(i => { const pre = new Image(); pre.src = i.src; });
+}
+
+
+// =====================================================
+// ====== CARGA DE PROYECTOS (API -> manifest -> fallback)
+// =====================================================
 let PROJECTS = [];
 let projectsLoaded = false;
 
 async function loadFromAPI() {
-  // Estructura esperada:
-  // { projects: [{ folder,title,area,blurb,text,images: ["assets/projects/FOLDER/archivo.jpg", ...] }]}
-  const data = await get(API_ENDPOINT);
+  const data = await fetchJSON(API_ENDPOINT);
   if (!Array.isArray(data.projects)) throw new Error("API sin 'projects'");
   return data.projects;
 }
-
 async function loadFromManifest() {
-  const data = await get(`${ASSETS_ROOT}/manifest.json?${Date.now()}`);
+  const data = await fetchJSON(`${ASSETS_ROOT}/manifest.json`);
   if (!Array.isArray(data.projects)) throw new Error("Manifest sin 'projects'");
   return data.projects.map(p => ({
     folder: p.folder,
-    title: p.title || p.folder,
-    area: typeof p.area !== "undefined" ? p.area : null,
-    blurb: p.blurb || "",
-    text: p.text || "",
+    title : p.title || p.folder,
+    area  : typeof p.area !== "undefined" ? p.area : null,
+    blurb : p.blurb || "",
+    text  : p.text  || "",
     images: Array.isArray(p.images) ? p.images : []
   }));
 }
-
-async function tryReadJSON(url) {
-  try { return await get(url); } catch { return null; }
-}
-
 async function loadFromFallback() {
-  // Lee metadata/index por carpeta si existen; si no, usa cover + numeradas
   const projects = [];
   for (const folder of FOLDERS_FALLBACK) {
     const meta = await tryReadJSON(`${ASSETS_ROOT}/${folder}/metadata.json`);
-    const idx = await tryReadJSON(`${ASSETS_ROOT}/${folder}/index.json`);
+    const idx  = await tryReadJSON(`${ASSETS_ROOT}/${folder}/index.json`);
     const title = meta?.title || folder.replace(/[-_]+/g, " ").replace(/\b[a-z]/g, m => m.toUpperCase());
-    const area = typeof meta?.area !== "undefined" ? meta.area : null;
+    const area  = typeof meta?.area !== "undefined" ? meta.area : null;
     const blurb = meta?.blurb || "";
     const text  = meta?.text  || "";
+
     let images = Array.isArray(idx) ? idx.map(name => `${ASSETS_ROOT}/${folder}/${name}`) : [];
-    // Siempre intenta incluir cover primero
-    images = [
-      `${ASSETS_ROOT}/${folder}/cover.jpg`,
-      ...images.filter(p => !/\/cover\./i.test(p))
-    ];
-    // Si no hay index.json, agrega 01..12 como candidatos
-    if (!idx) {
-      for (let i = 1; i <= 12; i++) {
-        const nn = String(i).padStart(2, "0");
-        images.push(`${ASSETS_ROOT}/${folder}/${nn}.jpg`);
-      }
-    }
+    const cover = `${ASSETS_ROOT}/${folder}/cover.jpg`;
+    images = [cover, ...images.filter(p => !/\/cover\./i.test(p))];
+
+    if (!idx) for (let i = 1; i <= 12; i++) images.push(`${ASSETS_ROOT}/${folder}/${String(i).padStart(2,"0")}.jpg`);
+
     projects.push({ folder, title, area, blurb, text, images });
   }
   return projects;
 }
-
 async function loadProjects() {
   if (projectsLoaded) return PROJECTS;
-  try {
-    PROJECTS = await loadFromAPI();
-  } catch (_) {
-    try {
-      PROJECTS = await loadFromManifest();
-    } catch (_) {
-      PROJECTS = await loadFromFallback();
-    }
-  }
-  projectsLoaded = true;
-  return PROJECTS;
+  try { PROJECTS = await loadFromAPI(); }
+  catch { try { PROJECTS = await loadFromManifest(); } catch { PROJECTS = await loadFromFallback(); } }
+  projectsLoaded = true; return PROJECTS;
 }
 
-// ====== UTILERÍA DOM GALERÍA ======
+
+// =====================================================
+// ===============  METADATA POR CARPETA  ==============
+// =====================================================
+async function ensureProjectMeta(idx) {
+  const p = PROJECTS[idx];
+  if (!p || p._metaLoaded !== undefined) return p;
+  if (!p.folder) { p._metaLoaded = false; return p; }
+  try {
+    const metaUrl = `${ASSETS_ROOT}/${encodeURIComponent(p.folder)}/metadata.json`;
+    const meta = await fetchJSON(metaUrl);
+    if (meta && typeof meta === "object") {
+      if (meta.title) p.title = meta.title;
+      if (meta.area  !== undefined) p.area  = meta.area;
+      if (meta.blurb) p.blurb = meta.blurb;
+      if (meta.text)  p.text  = meta.text;
+    }
+    p._metaLoaded = true;
+  } catch { p._metaLoaded = false; }
+  return p;
+}
+
+
+// =====================================================
+// ==================  GALERÍA DOM  ====================
+// =====================================================
 function ensureGalleryDom() {
   let galeria = document.getElementById("galeria-proyectos");
   if (!galeria) {
@@ -128,6 +192,15 @@ function ensureGalleryDom() {
     galeria.className = "gallery-wrapper";
     galeria.style.display = "none";
     document.body.appendChild(galeria);
+  }
+  // CTA sticky: volver
+  let cta = galeria.querySelector(".gallery-cta");
+  if (!cta){
+    cta = document.createElement("div");
+    cta.className = "gallery-cta";
+    cta.innerHTML = `<button class="gallery-back" type="button">← VOLVER AL INICIO</button>`;
+    galeria.appendChild(cta);
+    cta.querySelector(".gallery-back").addEventListener("click", () => navigateTo("inicio"));
   }
   let grid = document.getElementById("gallery-grid");
   if (!grid) {
@@ -141,14 +214,10 @@ function ensureGalleryDom() {
 
 function getCoverSrc(p) {
   if (Array.isArray(p.images) && p.images.length) {
-    // prioriza cover.* si existe
-    const cover = p.images.find(x => /\/cover\./i.test(x)) || p.images[0];
-    return cover;
+    return p.images.find(x => /\/cover\./i.test(x)) || p.images[0];
   }
-  // fallback básico
   return `${ASSETS_ROOT}/${p.folder}/cover.jpg`;
 }
-
 function getAllPics(p) {
   if (Array.isArray(p.images) && p.images.length) return p.images;
   const out = [`${ASSETS_ROOT}/${p.folder}/cover.jpg`];
@@ -156,7 +225,6 @@ function getAllPics(p) {
   return out;
 }
 
-// ====== PINTAR GALERÍA ======
 async function renderGallery() {
   await loadProjects();
   const { grid } = ensureGalleryDom();
@@ -179,7 +247,7 @@ async function renderGallery() {
     img.alt = p.title || "Proyecto";
     img.loading = "lazy";
     img.decoding = "async";
-    img.onerror = () => { card.remove(); }; // si el cover no existe, oculta tarjeta
+    img.onerror = () => { card.remove(); };
 
     const cap = document.createElement("figcaption");
     cap.className = "gallery-caption";
@@ -200,13 +268,16 @@ async function renderGallery() {
 
     card.appendChild(img);
     card.appendChild(cap);
-    card.addEventListener("click", () => openProjectDetail(idx), { passive: true });
+    card.addEventListener("click", () => openProjectDetail(idx));
 
     grid.appendChild(card);
   });
 }
 
-// ====== OVERLAY DETALLE ======
+
+// =====================================================
+// =================  OVERLAY DETALLE  =================
+// =====================================================
 function ensureOverlayDom() {
   let overlay = document.getElementById("project-overlay");
   if (!overlay) {
@@ -215,22 +286,23 @@ function ensureOverlayDom() {
     overlay.className = "detail-overlay";
     overlay.setAttribute("aria-hidden", "true");
     overlay.innerHTML = `
-      <div class="detail-backdrop" data-close="1"></div>
-      <aside class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
-        <button class="detail-close" aria-label="Cerrar" data-close="1">×</button>
-        <div class="detail-body">
-          <div class="detail-media">
-            <img id="detail-image" alt="">
-            <div id="detail-thumbs" class="detail-thumbs"></div>
-          </div>
-          <div class="detail-info">
-            <h3 id="detail-title">Proyecto</h3>
-            <p id="detail-meta" class="detail-meta"></p>
-            <p id="detail-text" class="detail-text"></p>
-          </div>
+  <div class="detail-backdrop" data-close="1"></div>
+  <aside class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <button class="detail-close" aria-label="Cerrar" data-close="1">×</button>
+    <div class="detail-body">
+      <div class="detail-media">
+        <div class="detail-canvas">
+          <img id="detail-image" alt="">
         </div>
-      </aside>
-    `;
+        <div id="detail-thumbs" class="detail-thumbs"></div>
+      </div>
+      <div class="detail-info">
+        <h3 id="detail-title">Proyecto</h3>
+        <p id="detail-meta" class="detail-meta"></p>
+        <p id="detail-text" class="detail-text"></p>
+      </div>
+    </div>
+  </aside>`;
     document.body.appendChild(overlay);
   }
   return {
@@ -244,58 +316,139 @@ function ensureOverlayDom() {
     thumbsEl: overlay.querySelector("#detail-thumbs"),
   };
 }
-
-const {
-  overlay,
-  backdrop,
-  closeBtn,
-  titleEl,
-  metaEl,
-  textEl,
-  imgEl,
-  thumbsEl
-} = ensureOverlayDom();
+const { overlay, backdrop, closeBtn, titleEl, metaEl, textEl, imgEl, thumbsEl } = ensureOverlayDom();
 
 let currentProject = -1;
 let currentImageIdx = 0;
 let currentPics = [];
 
-function setDetailImage(src) {
-  imgEl.onerror = () => {
-    // si falla, intenta la siguiente imagen disponible
-    if (!currentPics.length) { imgEl.removeAttribute("src"); return; }
-    const next = (currentImageIdx + 1) % currentPics.length;
-    if (next === currentImageIdx) { imgEl.removeAttribute("src"); return; }
-    currentImageIdx = next;
-    imgEl.onerror = null;
-    setDetailImage(currentPics[currentImageIdx]);
-  };
-  imgEl.src = src;
-  imgEl.alt = titleEl.textContent || "Imagen de proyecto";
+/* ====== Canvas cuadrado y autosize ====== */
+function ensureCanvasWrapper() {
+  const panel = document.querySelector(".detail-panel");
+  if (!panel) return null;
+  const body  = panel.querySelector(".detail-body");
+  const media = panel.querySelector(".detail-media");
+  const img   = panel.querySelector("#detail-image");
+  let canvas  = panel.querySelector(".detail-canvas");
+  if (!canvas && img) {
+    canvas = document.createElement("div");
+    canvas.className = "detail-canvas";
+    img.parentNode.insertBefore(canvas, img);
+    canvas.appendChild(img);
+  }
+  return { panel, body, media, canvas, img };
+}
+function sizeDetailCanvas() {
+  const refs = ensureCanvasWrapper();
+  if (!refs) return;
+  const { body, media, canvas } = refs;
+  const bodyRect  = body.getBoundingClientRect();
+  const mediaRect = media.getBoundingClientRect();
+  const thumbs    = media.querySelector(".detail-thumbs");
+  const gap = 12;
+  const thumbsH = thumbs ? thumbs.getBoundingClientRect().height : 0;
+  const maxH = Math.max(200, bodyRect.height - thumbsH - gap);
+  const maxW = mediaRect.width;
+  const side = Math.max(160, Math.min(maxW, maxH));
+  canvas.style.height = side + "px";
+}
+function bindResizeObserver() {
+  const refs = ensureCanvasWrapper();
+  if (!refs) return;
+  const { panel, body } = refs;
+  let rafId = null;
+  function onResize(){ cancelAnimationFrame(rafId); rafId = requestAnimationFrame(sizeDetailCanvas); }
+  window.addEventListener("resize", onResize);
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => sizeDetailCanvas());
+    ro.observe(body);
+    panel._detailRO = ro;
+  }
+  setTimeout(sizeDetailCanvas, 50);
+  setTimeout(sizeDetailCanvas, 200);
+  setTimeout(sizeDetailCanvas, 600);
+  window.addEventListener("orientationchange", () => setTimeout(sizeDetailCanvas, 250));
 }
 
+/* ====== Carrete: drag + wheel + pick ====== */
+function enableThumbsDragScroll(el, onPick){
+  if (!el) return;
+  let isDown=false, startX=0, startLeft=0, moved=false, pid=null;
+  el.addEventListener("pointerdown", (e) => {
+    isDown = true; moved = false;
+    pid = e.pointerId; el.setPointerCapture(pid);
+    startX = e.clientX; startLeft = el.scrollLeft;
+    el.classList.add("dragging");
+  });
+  el.addEventListener("pointermove", (e) => {
+    if (!isDown) return;
+    const dx = e.clientX - startX; if (Math.abs(dx) > 3) moved = true;
+    el.scrollLeft = startLeft - dx;
+  });
+  function finish(e){
+    if (!isDown) return;
+    if (!moved) {
+      const th = e.target.closest(".detail-thumb");
+      if (th && el.contains(th)) {
+        const i = [...el.children].indexOf(th);
+        if (i > -1) onPick?.(i);
+      }
+    }
+    isDown=false; moved=false;
+    if (pid != null) { try { el.releasePointerCapture(pid); } catch {} pid=null; }
+    el.classList.remove("dragging");
+  }
+  el.addEventListener("pointerup", finish);
+  el.addEventListener("pointercancel", finish);
+  el.addEventListener("pointerleave", finish);
+  el.addEventListener("click", (e) => {
+    const th = e.target.closest(".detail-thumb"); if (!th) return;
+    const i = [...el.children].indexOf(th); if (i > -1) onPick?.(i);
+  });
+  el.addEventListener("wheel", (e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { el.scrollLeft += e.deltaY; e.preventDefault(); }
+  }, { passive: false });
+}
+
+/* ====== Imagen principal y thumbs ====== */
+function setDetailImage(src) {
+  const { img } = ensureCanvasWrapper() || {};
+  if (!img) return;
+  img.onerror = () => {
+    if (!currentPics.length) { img.removeAttribute("src"); return; }
+    const next = (currentImageIdx + 1) % currentPics.length;
+    if (next === currentImageIdx) { img.removeAttribute("src"); return; }
+    currentImageIdx = next; img.onerror = null; setDetailImage(currentPics[currentImageIdx]);
+  };
+  img.onload = () => sizeDetailCanvas();
+  img.src = src;
+  img.alt = (titleEl?.textContent || "Imagen de proyecto");
+}
 function renderThumbs(pics){
   thumbsEl.innerHTML = "";
   pics.forEach((s, i) => {
     const th = document.createElement("div");
     th.className = "detail-thumb" + (i===0 ? " active":"");
-    const im = document.createElement("img");
-    im.src = s; im.alt = `Vista ${i+1}`;
-    im.onerror = () => th.remove(); // thumb oculto si no existe
+    const im = document.createElement("img"); im.src = s; im.alt = `Vista ${i+1}`;
+    im.onerror = () => th.remove();
     th.appendChild(im);
-    th.addEventListener("click", () => {
-      if (i === currentImageIdx) return;
-      currentImageIdx = i;
-      setDetailImage(pics[i]);
-      [...thumbsEl.children].forEach(c => c.classList.remove("active"));
-      th.classList.add("active");
-    }, { passive: true });
     thumbsEl.appendChild(th);
   });
+  enableThumbsDragScroll(thumbsEl, (i) => {
+    if (i === currentImageIdx) return;
+    currentImageIdx = i;
+    setDetailImage(currentPics[i]);
+    [...thumbsEl.children].forEach((c, idx) => c.classList.toggle("active", idx === i));
+  });
+  sizeDetailCanvas();
 }
 
-function openProjectDetail(idx){
-  const p = PROJECTS[idx]; if(!p) return;
+/* ====== Abrir / Cerrar panel ====== */
+async function openProjectDetail(idx){
+  await loadProjects();
+  let p = PROJECTS[idx]; if(!p) return;
+  p = await ensureProjectMeta(idx) || p;
+
   currentProject = idx; currentImageIdx = 0;
 
   titleEl.textContent = p.title || "Proyecto";
@@ -310,12 +463,12 @@ function openProjectDetail(idx){
 
   setDetailImage(currentPics[0]);
   renderThumbs(currentPics);
+  bindResizeObserver();
 
   overlay.setAttribute("aria-hidden", "false");
   overlay.classList.add("open");
   document.body.classList.add("modal-open");
 }
-
 function closeOverlay(){
   overlay.classList.remove("open");
   overlay.setAttribute("aria-hidden","true");
@@ -323,7 +476,7 @@ function closeOverlay(){
   currentPics = [];
   document.body.classList.remove("modal-open");
 }
-
+const { backdrop: _bd, closeBtn: _cb } = { backdrop, closeBtn };
 backdrop.addEventListener("click", closeOverlay, { passive:true });
 closeBtn.addEventListener("click", closeOverlay);
 document.addEventListener("keydown", (e) => {
@@ -337,51 +490,63 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// ====== NAVEGACIÓN DEL MENÚ ======
+
+// =====================================================
+// ==================  NAVEGACIÓN  =====================
+// =====================================================
+async function navigateTo(slideId){
+  clearInterval(autoInterval);
+  resetParallax();
+
+  const inicio = document.getElementById("inicio-content");
+  if (inicio) inicio.classList.toggle("active", slideId === "inicio");
+
+  document.querySelectorAll(".slide-container").forEach(s => s.classList.remove("active"));
+  if (slideId !== "inicio") document.getElementById("slide-" + slideId)?.classList.add("active");
+
+  const { galeria } = ensureGalleryDom();
+  if (slideId === "proyectos") {
+    await loadProjects();
+    renderGallery();
+    galeria.style.display = "flex";
+    galeria.classList.add("active");
+    document.body.classList.add("proyectos-active");
+    if (imageContainer) { imageContainer.style.display="none"; imageContainer.style.zIndex="-1"; }
+  } else {
+    galeria.style.display = "none";
+    galeria.classList.remove("active");
+    document.body.classList.remove("proyectos-active");
+    if (imageContainer) { imageContainer.style.display="block"; imageContainer.style.zIndex="0"; }
+    if (overlay.classList.contains("open")) closeOverlay();
+  }
+
+  // Imagen de portada asociada a la sección
+  if (images.length){
+    images.forEach((img, idx) => { img.classList.remove("active"); if (idx === slideToImage[slideId]) img.classList.add("active"); });
+  }
+
+  menu?.classList.remove("show");
+}
+
 document.querySelectorAll(".menu a").forEach(link => {
-  link.addEventListener("click", async function(e){
+  link.addEventListener("click", (e) => {
     e.preventDefault();
-    clearInterval(autoInterval);
-
-    const slideId = this.getAttribute("data-slide");
-
-    const inicio = document.getElementById("inicio-content");
-    if (inicio) inicio.classList.toggle("active", slideId === "inicio");
-
-    document.querySelectorAll(".slide-container").forEach(s => s.classList.remove("active"));
-    if (slideId !== "inicio") document.getElementById("slide-" + slideId)?.classList.add("active");
-
-    const { galeria } = ensureGalleryDom();
-    if (slideId === "proyectos") {
-      await loadProjects();     // aseguramos datos
-      renderGallery();          // pintamos
-      galeria.style.display = "flex";
-      galeria.classList.add("active");
-      document.body.classList.add("proyectos-active");
-      if (imageContainer) { imageContainer.style.display="none"; imageContainer.style.zIndex="-1"; }
-    } else {
-      galeria.style.display = "none";
-      galeria.classList.remove("active");
-      document.body.classList.remove("proyectos-active");
-      if (imageContainer) { imageContainer.style.display="block"; imageContainer.style.zIndex="0"; }
-      if (overlay.classList.contains("open")) closeOverlay();
-    }
-
-    images.forEach((img, idx) => {
-      img.classList.remove("active");
-      img.style.transform = "translate(0, 0)";
-      if (idx === slideToImage[slideId]) img.classList.add("active");
-    });
-
-    menu?.classList.remove("show");
-  }, { passive:true });
+    const slideId = link.getAttribute("data-slide");
+    navigateTo(slideId);
+  });
 });
 
-// Hover y toggle del menú
+// Hover / toggle menú
 if (menuContainer && menu) {
   menuContainer.addEventListener("mouseenter", () => menu.classList.add("show"), { passive:true });
   menuContainer.addEventListener("mouseleave", () => menu.classList.remove("show"), { passive:true });
 }
-if (menuBtn && menu) {
-  menuBtn.addEventListener("click", () => menu.classList.toggle("show"));
-}
+if (menuBtn && menu) { menuBtn.addEventListener("click", () => menu.classList.toggle("show")); }
+
+
+// =====================================================
+// ===================== INIT ==========================
+// =====================================================
+document.addEventListener("DOMContentLoaded", () => {
+  loadHomepageImages(); // portada desde manifest (o fallback HTML)
+});

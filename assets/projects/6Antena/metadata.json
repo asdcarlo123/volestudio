@@ -1,0 +1,6 @@
+{
+  "title": "INRAS-PUCP",
+  "area": 5,
+  "blurb": "Analisis de la deflexión de una antena de ondas electromagnéticas INRAS-PUCP.",
+  "text": "El informe presenta la generación y procesado de una nube de puntos de la antena en posiciones de 90° y 15°, a partir de archivos OJB, TXT y PCD. Se realizó el escalado del modelo usando la medida del tambor central (2.743 m) y se identificaron márgenes de error entre 3 mm y 11 mm según la calidad y condiciones del escaneo. El análisis geométrico reveló un desplazamiento del foco de 20 cm respecto al centro del plato y radios de 4.08 m y 8.11 m en su geometría. Los resultados permiten evaluar la precisión del modelo digital y constituyen base para futuros ajustes."
+}

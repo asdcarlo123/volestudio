@@ -2,7 +2,10 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
   <title>VOL-TEC Arquitectos</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -10,7 +13,7 @@
 
   <!-- Menú -->
   <div class="menu-container">
-    <div class="menu-btn">☰ MENU</div>
+    <div class="menu-btn" aria-haspopup="true" aria-expanded="false">☰ MENU</div>
     <nav id="menu" class="menu" aria-label="Menú principal">
       <a href="#" data-slide="inicio">INICIO</a>
       <a href="#" data-slide="proyectos">PROYECTOS</a>
@@ -27,7 +30,7 @@
     <div class="text text-top">XD</div>
     <div class="text text-bottom">VOL-TEC E.I.R.L.® 2025</div>
 
-    <div class="footer-contacto">
+    <div class="footer-contacto" role="contentinfo">
       <ul>
         <li><a href="https://www.instagram.com/asdcarlo/" target="_blank" rel="noopener">- INSTAGRAM</a></li>
         <li><a href="https://wa.me/51982344940" target="_blank" rel="noopener">- WHATSAPP</a></li>
@@ -36,12 +39,13 @@
     </div>
 
     <div class="big-title">VOL-TEC</div>
-    <div class="center-box"></div>
+    <div class="center-box" aria-hidden="true"></div>
   </main>
 
   <!-- Slides -->
-  <section id="slide-proyectos" class="slide-container">
+  <section id="slide-proyectos" class="slide-container" aria-labelledby="title-proyectos">
     <div class="slide">
+      <h1 id="title-proyectos" class="visually-hidden">Proyectos</h1>
       <div class="text text-left">Todos los derechos reservados</div>
       <div class="text text-right">VOL-TEC Arquitectos</div>
       <div class="text text-top">XD</div>
@@ -50,37 +54,38 @@
     </div>
   </section>
 
-  <section id="slide-tecnologia" class="slide-container">
+  <section id="slide-tecnologia" class="slide-container" aria-labelledby="title-tec">
     <div class="slide">
-      <h1>Tecnología</h1>
+      <h1 id="title-tec">Tecnología</h1>
       <p>Innovaciones y soluciones tecnológicas aplicadas.</p>
     </div>
   </section>
 
-  <section id="slide-contacto" class="slide-container">
+  <section id="slide-contacto" class="slide-container" aria-labelledby="title-contacto">
     <div class="slide">
-      <h1>Contacto</h1>
+      <h1 id="title-contacto">Contacto</h1>
       <p>Ponte en contacto con nosotros para más información.</p>
     </div>
   </section>
 
-  <section id="slide-nosotros" class="slide-container">
+  <section id="slide-nosotros" class="slide-container" aria-labelledby="title-nosotros">
     <div class="slide">
-      <h1>Nosotros</h1>
+      <h1 id="title-nosotros">Nosotros</h1>
       <p>Conoce más sobre nuestro equipo y filosofía.</p>
     </div>
   </section>
 
   <!-- Fondo de imágenes (portada rotatoria) -->
   <div class="image-container">
+    <!-- El JS reemplaza esto si hay manifest en ./assets/Homepage/manifest.json -->
     <img src="F-1.png" alt="Imagen portada 1" class="center-image" />
     <img src="DSC_6901.png" alt="Imagen portada 2" class="center-image active" />
     <img src="DSC_6595.png" alt="Imagen portada 3" class="center-image" />
   </div>
 
-  <!-- Galería (rellena el JS) -->
+  <!-- Galería: el JS inserta cada card -->
   <div id="galeria-proyectos" class="gallery-wrapper" style="display:none;">
-    <div id="gallery-grid" class="gallery-grid"></div>
+    <div id="gallery-grid" class="gallery-grid" role="list"></div>
   </div>
 
   <!-- Panel de detalle de proyecto (overlay centrado) -->
@@ -90,8 +95,10 @@
       <button class="detail-close" aria-label="Cerrar" data-close="1">×</button>
       <div class="detail-body">
         <div class="detail-media">
-          <img id="detail-image" alt="">
-          <div id="detail-thumbs" class="detail-thumbs"></div>
+          <div class="detail-canvas">
+            <img id="detail-image" alt="">
+          </div>
+          <div id="detail-thumbs" class="detail-thumbs" role="listbox" aria-label="Galería de imágenes"></div>
         </div>
         <div class="detail-info">
           <h3 id="detail-title">Proyecto</h3>
