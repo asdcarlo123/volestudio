@@ -2,43 +2,45 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>VOL-TEC Arquitectos</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  
+
   <!-- Menú -->
   <div class="menu-container">
     <div class="menu-btn">☰ MENU</div>
-    <div id="menu" class="menu">
+    <nav id="menu" class="menu" aria-label="Menú principal">
       <a href="#" data-slide="inicio">INICIO</a>
       <a href="#" data-slide="proyectos">PROYECTOS</a>
       <a href="#" data-slide="tecnologia">TECNOLOGÍA</a>
       <a href="#" data-slide="contacto">CONTACTO</a>
       <a href="#" data-slide="nosotros">NOSOTROS</a>
-    </div>
+    </nav>
   </div>
 
   <!-- Contenido INICIO -->
-  <div id="inicio-content" class="container active">
+  <main id="inicio-content" class="container active">
     <div class="text text-left">Todos los derechos reservados</div>
     <div class="text text-right">VOL-TEC Arquitectos</div>
     <div class="text text-top">XD</div>
     <div class="text text-bottom">VOL-TEC E.I.R.L.® 2025</div>
-     <div class="footer-contacto">
-    <ul>
-      <li><a href="https://www.instagram.com/asdcarlo/" target="_blank">- INSTAGRAM</a></li>
-      <li><a href="https://wa.me/51982344940" target="_blank">- WHASTAPP</a></li>
-      <li><a href="mailto:carloandregarcia@hotmail.com">- CORREO</a></li>
-    </ul>
+
+    <div class="footer-contacto">
+      <ul>
+        <li><a href="https://www.instagram.com/asdcarlo/" target="_blank" rel="noopener">- INSTAGRAM</a></li>
+        <li><a href="https://wa.me/51982344940" target="_blank" rel="noopener">- WHATSAPP</a></li>
+        <li><a href="mailto:carloandregarcia@hotmail.com">- CORREO</a></li>
+      </ul>
     </div>
+
     <div class="big-title">VOL-TEC</div>
     <div class="center-box"></div>
-  </div>
+  </main>
 
   <!-- Slides -->
-  <div id="slide-proyectos" class="slide-container">
+  <section id="slide-proyectos" class="slide-container">
     <div class="slide">
       <div class="text text-left">Todos los derechos reservados</div>
       <div class="text text-right">VOL-TEC Arquitectos</div>
@@ -46,76 +48,61 @@
       <div class="text text-bottom">VOL-TEC E.I.R.L.® 2025</div>
       <div class="big-title">PY</div>
     </div>
-  </div>
+  </section>
 
-  <div id="slide-tecnologia" class="slide-container">
+  <section id="slide-tecnologia" class="slide-container">
     <div class="slide">
       <h1>Tecnología</h1>
       <p>Innovaciones y soluciones tecnológicas aplicadas.</p>
     </div>
-  </div>
+  </section>
 
-  <div id="slide-contacto" class="slide-container">
+  <section id="slide-contacto" class="slide-container">
     <div class="slide">
       <h1>Contacto</h1>
       <p>Ponte en contacto con nosotros para más información.</p>
     </div>
-  </div>
+  </section>
 
-  <div id="slide-nosotros" class="slide-container">
+  <section id="slide-nosotros" class="slide-container">
     <div class="slide">
       <h1>Nosotros</h1>
       <p>Conoce más sobre nuestro equipo y filosofía.</p>
     </div>
-  </div>
+  </section>
 
-  <!-- Fondo de imágenes -->
+  <!-- Fondo de imágenes (portada rotatoria) -->
   <div class="image-container">
-    <img src="F-1.png" alt="Imagen 3" class="center-image" />
-    <img src="DSC_6901.png" alt="Imagen 1" class="center-image active" />
-    <img src="DSC_6595.png" alt="Imagen 3" class="center-image" />
-    
-    
+    <img src="F-1.png" alt="Imagen portada 1" class="center-image" />
+    <img src="DSC_6901.png" alt="Imagen portada 2" class="center-image active" />
+    <img src="DSC_6595.png" alt="Imagen portada 3" class="center-image" />
   </div>
 
-  <!-- Galería -->
-<div id="galeria-proyectos" class="gallery-wrapper" style="display: none;">
-  <div class="gallery-grid">
-    
-    <div class="gallery-item">
-      <img src="B-SJL.png" alt="Proyecto B-SJL"/>
-      <p class="gallery-title">Proyecto B-SJL</p>
-    </div>
-
-    <div class="gallery-item">
-      <img src="CASA-XD.jpg" alt="Casa XD"/>
-      <p class="gallery-title">Casa XD</p>
-    </div>
-
-    <div class="gallery-item">
-      <img src="Antena.jpg" alt="Torre Antena"/>
-      <p class="gallery-title">Torre Antena</p>
-    </div>
-
-    <div class="gallery-item">
-      <img src="RU-SM-FACHADA.png" alt="Fachada SM"/>
-      <p class="gallery-title">Fachada SM</p>
-    </div>
-
-    <div class="gallery-item">
-      <img src="VIS.png" alt="Vivienda VIS"/>
-      <p class="gallery-title">Vivienda VIS</p>
-    </div>
-
-    <div class="gallery-item">
-      <img src="m4.png" alt="Modelo M4"/>
-      <p class="gallery-title">Modelo M4</p>
-    </div>
-
+  <!-- Galería (rellena el JS) -->
+  <div id="galeria-proyectos" class="gallery-wrapper" style="display:none;">
+    <div id="gallery-grid" class="gallery-grid"></div>
   </div>
-</div>
+
+  <!-- Panel de detalle de proyecto (overlay centrado) -->
+  <div id="project-overlay" class="detail-overlay" aria-hidden="true">
+    <div class="detail-backdrop" data-close="1"></div>
+    <aside class="detail-panel" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <button class="detail-close" aria-label="Cerrar" data-close="1">×</button>
+      <div class="detail-body">
+        <div class="detail-media">
+          <img id="detail-image" alt="">
+          <div id="detail-thumbs" class="detail-thumbs"></div>
+        </div>
+        <div class="detail-info">
+          <h3 id="detail-title">Proyecto</h3>
+          <p id="detail-meta" class="detail-meta"></p>
+          <p id="detail-text" class="detail-text"></p>
+        </div>
+      </div>
+    </aside>
+  </div>
+
   <!-- Scripts -->
   <script src="script.js"></script>
-  
 </body>
 </html>
