@@ -135,32 +135,43 @@
   }
 
   function buildPayload(){
-    const d = Object.fromEntries(new FormData(form).entries());
-    // Mapeo al backend (Apps Script) que espera estos nombres:
-    return {
-      token: CFG.token,
-      nombre: d.client_name?.trim(),
-      email: d.client_email?.trim(),
-      telefono: d.client_phone?.trim() || '',
-      servicio: [d.project_type, d.urgency ? `(${d.urgency})` : ''].filter(Boolean).join(' '),
-      area_m2: '',                  // no se pide aquí
-      distrito: '',                 // no se pide aquí
-      presupuesto: d.budget_peru_pen?.trim() || '',
-      mensaje: d.project_scope?.trim(),
-      url_referencias: ''           // no se pide aquí
-    };
-  }
+  const d = Object.fromEntries(new FormData(form).entries());
+  return {
+    token: CFG.token,
+    nombre: d.client_name?.trim(),
+    email: d.client_email?.trim(),
+    telefono: d.client_phone?.trim() || '',
+    servicio: [d.project_type, d.urgency ? `(${d.urgency})` : ''].filter(Boolean).join(' '),
+    area_m2: '',
+    distrito: '',
+    presupuesto: d.budget_peru_pen?.trim() || '',
+    mensaje: d.project_scope?.trim(),
+    url_referencias: '',
+    // NUEVO:
+    origin: window.location.origin,
+    user_agent: navigator.userAgent
+  };
+}
+
 
   async function postToSheet(payload){
-    const res = await fetch(CFG.scriptUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    let data = {};
-    try { data = await res.json(); } catch { /* ignore */ }
-    if (!res.ok || !data.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  const res = await fetch(CFG.scriptUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await res.text(); // más robusto
+  let data = {};
+  try { data = JSON.parse(text); } catch {}
+
+  if (res.ok && (data.ok === undefined || data.ok === true)) {
+    return; // éxito
   }
+  throw new Error(data?.error || `HTTP ${res.status} – ${text.slice(0,120)}`);
+}
+
+
 
   function downloadBackup(obj){
     const ts = new Date().toISOString().replaceAll(':','-');
