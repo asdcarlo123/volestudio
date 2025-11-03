@@ -32,10 +32,10 @@
   .vtcq-msg{margin:8px 16px 14px;font-size:12px;display:none}
   .vtcq-msg.show{display:block}
   .vtcq-msg.ok{color:#a7ffd6}
-  .vtcq-msg.err{color:#ff5c5c}
-  .vtcq-badge{display:inline-flex;gap:6px;align-items:center;font-size:11px;color:#7cebd9;background:#072a26;border:1px solid #0a3b35;padding:4px 8px;border-radius:999px}`;
+  .vtcq-msg.err{color:#ff5c5c}`;
   const styleTag = document.createElement('style');
-  styleTag.textContent = css; document.head.appendChild(styleTag);
+  styleTag.textContent = css;
+  document.head.appendChild(styleTag);
 
   // ====== HTML ======
   const wrapper = document.createElement('div');
@@ -44,6 +44,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Cotizar proyecto
     </button>
+
     <section class="vtcq-panel" id="vtcqPanel" role="dialog" aria-labelledby="vtcqTitle" aria-modal="true">
       <div class="vtcq-header">
         <div>
@@ -52,6 +53,7 @@
         </div>
         <button class="vtcq-close" id="vtcqClose" aria-label="Cerrar">✕</button>
       </div>
+
       <form class="vtcq-form" id="vtcqForm" novalidate>
         <div class="vtcq-row">
           <div>
@@ -63,6 +65,7 @@
             <input name="client_email" type="email" autocomplete="email" required placeholder="tucorreo@dominio.com" />
           </div>
         </div>
+
         <div class="vtcq-row">
           <div>
             <label>Teléfono</label>
@@ -80,34 +83,30 @@
             </select>
           </div>
         </div>
+
+        <div>
+          <label>Área (m²)</label>
+          <input name="area_m2" type="number" min="0" step="0.01" placeholder="Ejemplo: 150" />
+        </div>
+
         <div>
           <label>Alcance y detalles *</label>
-          <textarea name="project_scope" placeholder="Área (m²), ubicación, plazos, etc." required></textarea>
+          <textarea name="project_scope" placeholder="Ubicación, plazos, requerimientos, etc." required></textarea>
         </div>
-        <div class="vtcq-row">
-          <div>
-            <label>Monto estimado (S/)</label>
-            <input name="budget_peru_pen" type="number" min="0" step="0.01" placeholder="Opcional" />
-          </div>
-          <div>
-            <label>Urgencia</label>
-            <select name="urgency">
-              <option>Normal (7–10 días)</option>
-              <option>Rápido (3–5 días)</option>
-              <option>Express (48–72 h)</option>
-            </select>
-          </div>
-        </div>
+
         <!-- Honeypot anti-spam -->
         <input type="text" name="empresa" id="vtcqHp" style="display:none" tabindex="-1" autocomplete="off" />
+
         <div class="vtcq-note">Los datos se registrarán en nuestro sistema.</div>
         <div class="vtcq-actions">
           <button type="button" class="vtcq-btn ghost" id="vtcqClear">Limpiar</button>
           <button type="submit" class="vtcq-btn primary" id="vtcqSubmit">Enviar</button>
         </div>
       </form>
+
       <div class="vtcq-msg" id="vtcqMsg"></div>
     </section>`;
+
   document.body.appendChild(wrapper);
 
   // ====== Lógica ======
@@ -135,43 +134,46 @@
   }
 
   function buildPayload(){
-  const d = Object.fromEntries(new FormData(form).entries());
-  return {
-    token: CFG.token,
-    nombre: d.client_name?.trim(),
-    email: d.client_email?.trim(),
-    telefono: d.client_phone?.trim() || '',
-    servicio: [d.project_type, d.urgency ? `(${d.urgency})` : ''].filter(Boolean).join(' '),
-    area_m2: '',
-    distrito: '',
-    presupuesto: d.budget_peru_pen?.trim() || '',
-    mensaje: d.project_scope?.trim(),
-    url_referencias: '',
-    // NUEVO:
-    origin: window.location.origin,
-    user_agent: navigator.userAgent
-  };
-}
-
-
-  async function postToSheet(payload){
-  const res = await fetch(CFG.scriptUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(payload)
-  });
-
-  const text = await res.text(); // más robusto
-  let data = {};
-  try { data = JSON.parse(text); } catch {}
-
-  if (res.ok && (data.ok === undefined || data.ok === true)) {
-    return; // éxito
+    const d = Object.fromEntries(new FormData(form).entries());
+    return {
+      token: CFG.token,
+      nombre: d.client_name?.trim(),
+      email: d.client_email?.trim(),
+      telefono: d.client_phone?.trim() || '',
+      servicio: d.project_type,
+      area_m2: d.area_m2?.trim() || '',
+      distrito: '',
+      presupuesto: '',
+      mensaje: d.project_scope?.trim(),
+      url_referencias: '',
+      origin: window.location.origin,
+      user_agent: navigator.userAgent
+    };
   }
-  throw new Error(data?.error || `HTTP ${res.status} – ${text.slice(0,120)}`);
-}
 
-
+  async function postToSheet(payload) {
+    try {
+      const r1 = await fetch(CFG.scriptUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const text = await r1.text();
+      if (r1.ok && (text.trim() === '' || /"ok"\s*:\s*true/i.test(text))) return;
+      throw new Error(`HTTP ${r1.status} – ${text.slice(0,160)}`);
+    } catch (e) {
+      try {
+        const ok = navigator.sendBeacon(
+          CFG.scriptUrl,
+          new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=utf-8' })
+        );
+        if (ok) return;
+        throw new Error('sendBeacon devolvió false');
+      } catch (e2) {
+        throw e2;
+      }
+    }
+  }
 
   function downloadBackup(obj){
     const ts = new Date().toISOString().replaceAll(':','-');
