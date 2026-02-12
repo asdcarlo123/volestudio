@@ -23,6 +23,9 @@ const imageContainer = document.querySelector(".image-container");
 
 const slideToImage = { "inicio":0, "proyectos":1, "tecnologia":2, "contacto":0, "nosotros":1 };
 
+// MODO FEED SOLO SI <html> tiene class="mobile-feed"
+const isMobileFeed = () => document.documentElement.classList.contains("mobile-feed");
+
 
 // =====================================================
 // ========  ROTACIÓN AUTOMÁTICA (PORTADA)  ============
@@ -32,7 +35,12 @@ let autoInterval = setInterval(autoRotate, 2000);
 
 function autoRotate() {
   const inicio = document.getElementById("inicio-content");
-  if (!(inicio && inicio.classList.contains("active"))) return;
+
+  // En desktop: rota solo si estás en inicio activo
+  if (!isMobileFeed()) {
+    if (!(inicio && inicio.classList.contains("active"))) return;
+  }
+
   if (!images.length) return;
   images[autoIndex]?.classList.remove("active");
   autoIndex = (autoIndex + 1) % images.length;
@@ -44,18 +52,19 @@ function autoRotate() {
 // ================   PARALLAX SUAVE   =================
 // =====================================================
 document.addEventListener("mousemove", (e) => {
+  // En móvil feed normalmente no hay mouse real; igual no estorba.
   const activeImage = document.querySelector(".center-image.active");
   if (!activeImage) return;
   const moveX = (0.5 - e.clientX / window.innerWidth) * 50;
   const moveY = (0.5 - e.clientY / window.innerHeight) * 50;
-  activeImage.style.setProperty('--tx', `${moveX}px`);
-  activeImage.style.setProperty('--ty', `${moveY}px`);
+  activeImage.style.setProperty("--tx", `${moveX}px`);
+  activeImage.style.setProperty("--ty", `${moveY}px`);
 }, { passive: true });
 
 function resetParallax() {
   document.querySelectorAll(".center-image").forEach(img => {
-    img.style.setProperty('--tx', '0px');
-    img.style.setProperty('--ty', '0px');
+    img.style.setProperty("--tx", "0px");
+    img.style.setProperty("--ty", "0px");
   });
 }
 
@@ -63,7 +72,10 @@ function resetParallax() {
 // =====================================================
 // ===================== HELPERS =======================
 // =====================================================
-const fmtM2 = (n) => { try { return `${parseInt(n, 10).toLocaleString("es-PE")} m²`; } catch { return `${n} m²`; } };
+const fmtM2 = (n) => {
+  try { return `${parseInt(n, 10).toLocaleString("es-PE")} m²`; }
+  catch { return `${n} m²`; }
+};
 
 async function fetchJSON(url) {
   const res = await fetch(url + (url.includes("?") ? "" : bust()), { cache: "no-store" });
@@ -73,7 +85,11 @@ async function fetchJSON(url) {
 async function tryReadJSON(url) { try { return await fetchJSON(url); } catch { return null; } }
 
 function filenameToTitle(name) {
-  return (name || "").replace(/\.[a-z0-9]+$/i, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+  return (name || "")
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 
@@ -104,6 +120,8 @@ async function loadHomepageImages(){
 
   images = Array.from(document.querySelectorAll(".center-image"));
   autoIndex = 0;
+
+  // Precarga liviana
   images.slice(1).forEach(i => { const pre = new Image(); pre.src = i.src; });
 }
 
@@ -141,21 +159,25 @@ async function loadFromFallback() {
     const blurb = meta?.blurb || "";
     const text  = meta?.text  || "";
 
-    let images = Array.isArray(idx) ? idx.map(name => `${ASSETS_ROOT}/${folder}/${name}`) : [];
+    let imgs = Array.isArray(idx) ? idx.map(name => `${ASSETS_ROOT}/${folder}/${name}`) : [];
     const cover = `${ASSETS_ROOT}/${folder}/cover.jpg`;
-    images = [cover, ...images.filter(p => !/\/cover\./i.test(p))];
+    imgs = [cover, ...imgs.filter(p => !/\/cover\./i.test(p))];
 
-    if (!idx) for (let i = 1; i <= 12; i++) images.push(`${ASSETS_ROOT}/${folder}/${String(i).padStart(2,"0")}.jpg`);
+    if (!idx) for (let i = 1; i <= 12; i++) imgs.push(`${ASSETS_ROOT}/${folder}/${String(i).padStart(2,"0")}.jpg`);
 
-    projects.push({ folder, title, area, blurb, text, images });
+    projects.push({ folder, title, area, blurb, text, images: imgs });
   }
   return projects;
 }
 async function loadProjects() {
   if (projectsLoaded) return PROJECTS;
   try { PROJECTS = await loadFromAPI(); }
-  catch { try { PROJECTS = await loadFromManifest(); } catch { PROJECTS = await loadFromFallback(); } }
-  projectsLoaded = true; return PROJECTS;
+  catch {
+    try { PROJECTS = await loadFromManifest(); }
+    catch { PROJECTS = await loadFromFallback(); }
+  }
+  projectsLoaded = true;
+  return PROJECTS;
 }
 
 
@@ -191,9 +213,10 @@ function ensureGalleryDom() {
     galeria.id = "galeria-proyectos";
     galeria.className = "gallery-wrapper";
     galeria.style.display = "none";
-    document.body.appendChild(galeria);
+    (document.getElementById("app") || document.body).appendChild(galeria);
   }
-  // CTA sticky: volver
+
+  // CTA sticky: volver (en móvil feed se oculta por CSS)
   let cta = galeria.querySelector(".gallery-cta");
   if (!cta){
     cta = document.createElement("div");
@@ -202,6 +225,7 @@ function ensureGalleryDom() {
     galeria.appendChild(cta);
     cta.querySelector(".gallery-back").addEventListener("click", () => navigateTo("inicio"));
   }
+
   let grid = document.getElementById("gallery-grid");
   if (!grid) {
     grid = document.createElement("div");
@@ -316,7 +340,7 @@ function ensureOverlayDom() {
     thumbsEl: overlay.querySelector("#detail-thumbs"),
   };
 }
-const { overlay, backdrop, closeBtn, titleEl, metaEl, textEl, imgEl, thumbsEl } = ensureOverlayDom();
+const { overlay, backdrop, closeBtn, titleEl, metaEl, textEl, thumbsEl } = ensureOverlayDom();
 
 let currentProject = -1;
 let currentImageIdx = 0;
@@ -356,14 +380,17 @@ function bindResizeObserver() {
   const refs = ensureCanvasWrapper();
   if (!refs) return;
   const { panel, body } = refs;
+
   let rafId = null;
   function onResize(){ cancelAnimationFrame(rafId); rafId = requestAnimationFrame(sizeDetailCanvas); }
   window.addEventListener("resize", onResize);
+
   if (window.ResizeObserver) {
     const ro = new ResizeObserver(() => sizeDetailCanvas());
     ro.observe(body);
     panel._detailRO = ro;
   }
+
   setTimeout(sizeDetailCanvas, 50);
   setTimeout(sizeDetailCanvas, 200);
   setTimeout(sizeDetailCanvas, 600);
@@ -373,20 +400,26 @@ function bindResizeObserver() {
 /* ====== Carrete: drag + wheel + pick ====== */
 function enableThumbsDragScroll(el, onPick){
   if (!el) return;
+
   let isDown=false, startX=0, startLeft=0, moved=false, pid=null;
+
   el.addEventListener("pointerdown", (e) => {
     isDown = true; moved = false;
     pid = e.pointerId; el.setPointerCapture(pid);
     startX = e.clientX; startLeft = el.scrollLeft;
     el.classList.add("dragging");
   });
+
   el.addEventListener("pointermove", (e) => {
     if (!isDown) return;
-    const dx = e.clientX - startX; if (Math.abs(dx) > 3) moved = true;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 3) moved = true;
     el.scrollLeft = startLeft - dx;
   });
+
   function finish(e){
     if (!isDown) return;
+
     if (!moved) {
       const th = e.target.closest(".detail-thumb");
       if (th && el.contains(th)) {
@@ -394,19 +427,28 @@ function enableThumbsDragScroll(el, onPick){
         if (i > -1) onPick?.(i);
       }
     }
+
     isDown=false; moved=false;
     if (pid != null) { try { el.releasePointerCapture(pid); } catch {} pid=null; }
     el.classList.remove("dragging");
   }
+
   el.addEventListener("pointerup", finish);
   el.addEventListener("pointercancel", finish);
   el.addEventListener("pointerleave", finish);
+
   el.addEventListener("click", (e) => {
-    const th = e.target.closest(".detail-thumb"); if (!th) return;
-    const i = [...el.children].indexOf(th); if (i > -1) onPick?.(i);
+    const th = e.target.closest(".detail-thumb");
+    if (!th) return;
+    const i = [...el.children].indexOf(th);
+    if (i > -1) onPick?.(i);
   });
+
   el.addEventListener("wheel", (e) => {
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { el.scrollLeft += e.deltaY; e.preventDefault(); }
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      el.scrollLeft += e.deltaY;
+      e.preventDefault();
+    }
   }, { passive: false });
 }
 
@@ -414,42 +456,56 @@ function enableThumbsDragScroll(el, onPick){
 function setDetailImage(src) {
   const { img } = ensureCanvasWrapper() || {};
   if (!img) return;
+
   img.onerror = () => {
     if (!currentPics.length) { img.removeAttribute("src"); return; }
     const next = (currentImageIdx + 1) % currentPics.length;
     if (next === currentImageIdx) { img.removeAttribute("src"); return; }
-    currentImageIdx = next; img.onerror = null; setDetailImage(currentPics[currentImageIdx]);
+    currentImageIdx = next;
+    img.onerror = null;
+    setDetailImage(currentPics[currentImageIdx]);
   };
+
   img.onload = () => sizeDetailCanvas();
   img.src = src;
   img.alt = (titleEl?.textContent || "Imagen de proyecto");
 }
+
 function renderThumbs(pics){
   thumbsEl.innerHTML = "";
+
   pics.forEach((s, i) => {
     const th = document.createElement("div");
     th.className = "detail-thumb" + (i===0 ? " active":"");
-    const im = document.createElement("img"); im.src = s; im.alt = `Vista ${i+1}`;
+
+    const im = document.createElement("img");
+    im.src = s;
+    im.alt = `Vista ${i+1}`;
     im.onerror = () => th.remove();
+
     th.appendChild(im);
     thumbsEl.appendChild(th);
   });
+
   enableThumbsDragScroll(thumbsEl, (i) => {
     if (i === currentImageIdx) return;
     currentImageIdx = i;
     setDetailImage(currentPics[i]);
     [...thumbsEl.children].forEach((c, idx) => c.classList.toggle("active", idx === i));
   });
+
   sizeDetailCanvas();
 }
 
 /* ====== Abrir / Cerrar panel ====== */
 async function openProjectDetail(idx){
   await loadProjects();
-  let p = PROJECTS[idx]; if(!p) return;
+  let p = PROJECTS[idx];
+  if(!p) return;
   p = await ensureProjectMeta(idx) || p;
 
-  currentProject = idx; currentImageIdx = 0;
+  currentProject = idx;
+  currentImageIdx = 0;
 
   titleEl.textContent = p.title || "Proyecto";
   metaEl.textContent = [
@@ -469,6 +525,7 @@ async function openProjectDetail(idx){
   overlay.classList.add("open");
   document.body.classList.add("modal-open");
 }
+
 function closeOverlay(){
   overlay.classList.remove("open");
   overlay.setAttribute("aria-hidden","true");
@@ -476,15 +533,18 @@ function closeOverlay(){
   currentPics = [];
   document.body.classList.remove("modal-open");
 }
-const { backdrop: _bd, closeBtn: _cb } = { backdrop, closeBtn };
+
 backdrop.addEventListener("click", closeOverlay, { passive:true });
 closeBtn.addEventListener("click", closeOverlay);
+
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && overlay.classList.contains("open")) closeOverlay();
+
   if (overlay.classList.contains("open") && (e.key==="ArrowRight" || e.key==="ArrowLeft")){
     if (!currentPics.length) return;
     if (e.key==="ArrowRight") currentImageIdx = (currentImageIdx+1) % currentPics.length;
     if (e.key==="ArrowLeft")  currentImageIdx = (currentImageIdx-1+currentPics.length) % currentPics.length;
+
     setDetailImage(currentPics[currentImageIdx]);
     [...thumbsEl.children].forEach((c,i) => c.classList.toggle("active", i===currentImageIdx));
   }
@@ -495,6 +555,31 @@ document.addEventListener("keydown", (e) => {
 // ==================  NAVEGACIÓN  =====================
 // =====================================================
 async function navigateTo(slideId){
+
+  // ====== MODO FEED (SOLO CELULAR): INICIO -> GALERÍA ======
+  if (isMobileFeed()){
+
+    // Asegura que la galería esté renderizada al navegar a proyectos
+    if (slideId === "proyectos"){
+      await loadProjects();
+      await renderGallery();
+    }
+
+    // Scroll a sección (PROYECTOS => galeria-proyectos)
+    const map = {
+      inicio: "inicio-content",
+      proyectos: "galeria-proyectos"
+      // Las demás secciones no existen como feed aquí
+    };
+
+    document.getElementById(map[slideId] || "inicio-content")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    menu?.classList.remove("show");
+    return;
+  }
+
+  // ====== DESKTOP (TU LÓGICA ORIGINAL) ======
   clearInterval(autoInterval);
   resetParallax();
 
@@ -505,24 +590,38 @@ async function navigateTo(slideId){
   if (slideId !== "inicio") document.getElementById("slide-" + slideId)?.classList.add("active");
 
   const { galeria } = ensureGalleryDom();
+
   if (slideId === "proyectos") {
     await loadProjects();
-    renderGallery();
+    await renderGallery();
+
     galeria.style.display = "flex";
     galeria.classList.add("active");
     document.body.classList.add("proyectos-active");
-    if (imageContainer) { imageContainer.style.display="none"; imageContainer.style.zIndex="-1"; }
+
+    if (imageContainer) {
+      imageContainer.style.display="none";
+      imageContainer.style.zIndex="-1";
+    }
   } else {
     galeria.style.display = "none";
     galeria.classList.remove("active");
     document.body.classList.remove("proyectos-active");
-    if (imageContainer) { imageContainer.style.display="block"; imageContainer.style.zIndex="0"; }
+
+    if (imageContainer) {
+      imageContainer.style.display="block";
+      imageContainer.style.zIndex="0";
+    }
+
     if (overlay.classList.contains("open")) closeOverlay();
   }
 
   // Imagen de portada asociada a la sección
   if (images.length){
-    images.forEach((img, idx) => { img.classList.remove("active"); if (idx === slideToImage[slideId]) img.classList.add("active"); });
+    images.forEach((img, idx) => {
+      img.classList.remove("active");
+      if (idx === slideToImage[slideId]) img.classList.add("active");
+    });
   }
 
   menu?.classList.remove("show");
@@ -541,12 +640,22 @@ if (menuContainer && menu) {
   menuContainer.addEventListener("mouseenter", () => menu.classList.add("show"), { passive:true });
   menuContainer.addEventListener("mouseleave", () => menu.classList.remove("show"), { passive:true });
 }
-if (menuBtn && menu) { menuBtn.addEventListener("click", () => menu.classList.toggle("show")); }
+if (menuBtn && menu) {
+  menuBtn.addEventListener("click", () => menu.classList.toggle("show"));
+}
 
 
 // =====================================================
 // ===================== INIT ==========================
 // =====================================================
-document.addEventListener("DOMContentLoaded", () => {
-  loadHomepageImages(); // portada desde manifest (o fallback HTML)
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadHomepageImages();
+
+  // En móvil feed: renderiza la galería desde el arranque (para swippear hacia abajo)
+  if (isMobileFeed()){
+    await loadProjects();
+    await renderGallery();
+    const { galeria } = ensureGalleryDom();
+    galeria.style.display = "block"; // el CSS ya lo fuerza, pero así no dependes del inline style
+  }
 });

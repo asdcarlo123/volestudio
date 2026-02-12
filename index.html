@@ -2,25 +2,32 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>VOL-TEC Arquitectos</title>
+
+  <!-- Marca móvil real (touch + pantalla chica) ANTES del CSS -->
+  <script>
+    (function () {
+      const isPhoneLike = window.matchMedia("(hover: none) and (pointer: coarse) and (max-width: 900px)").matches;
+      if (isPhoneLike) document.documentElement.classList.add("mobile-feed");
+    })();
+  </script>
+
   <link rel="stylesheet" href="styles.css" />
+
+  <script>
+    window.VTC_QUOTE_CONFIG = {
+      scriptUrl: "https://script.google.com/macros/s/AKfycbwz0SshowiTC0YBK7oIl5Odu4PM7T13QP-PCIL3z9ZhnEGobaeTa344Oeq0GYoQiHKOJw/exec",
+      token: "VT-814a2c7f9c7b4d0e8a3f6b4e1c2a",
+      accent: "#00e0b8",
+      brand: "VOL-TEC Arquitectos"
+    };
+  </script>
+
+  <script defer src="quote-widget.js"></script>
 </head>
-<script>
-  window.VTC_QUOTE_CONFIG = {
-    scriptUrl: "https://script.google.com/macros/s/AKfycbwz0SshowiTC0YBK7oIl5Odu4PM7T13QP-PCIL3z9ZhnEGobaeTa344Oeq0GYoQiHKOJw/exec",
-    token: "VT-814a2c7f9c7b4d0e8a3f6b4e1c2a",
-    accent: "#00e0b8",
-    brand: "VOL-TEC Arquitectos"
-  };
-</script>
-<script defer src="quote-widget.js"></script>
-
 <body>
-
+<div id="app">
   <!-- Menú -->
   <div class="menu-container">
     <div class="menu-btn" aria-haspopup="true" aria-expanded="false">☰ MENU</div>
@@ -121,5 +128,6 @@
 
   <!-- Scripts -->
   <script src="script.js"></script>
+  </div>
 </body>
 </html>
