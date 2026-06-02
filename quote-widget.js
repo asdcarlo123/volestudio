@@ -1,210 +1,55 @@
 (function () {
-  const CFG = Object.assign({
-    scriptUrl: "",
-    token: "",
-    accent: "#00e0b8",
-    brand: "VOL-TEC Arquitectos",
-  }, window.VTC_QUOTE_CONFIG || {});
+  const phone = "51982344940";
+  const text = encodeURIComponent("Hola VOL-TEC, quisiera cotizar un proyecto.");
+  const href = `https://wa.me/${phone}?text=${text}`;
 
-  if (!CFG.scriptUrl || !CFG.token) {
-    console.error("[VTC-Quote] Falta scriptUrl o token en VTC_QUOTE_CONFIG");
-  }
+  const css = `
+    .vtcw-link{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      z-index:9999;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      min-height:48px;
+      padding:12px 18px;
+      border-radius:999px;
+      background:#25d366;
+      color:#061115;
+      font:700 14px/1.1 Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      text-decoration:none;
+      box-shadow:0 12px 30px rgba(0,0,0,.35);
+      -webkit-tap-highlight-color:transparent;
+    }
+    .vtcw-link:hover{ filter:brightness(1.04); }
+    .vtcw-link:focus-visible{ outline:3px solid rgba(37,211,102,.35); outline-offset:3px; }
+    .vtcw-link svg{ width:20px; height:20px; flex:0 0 auto; }
+    @media (max-width:768px){
+      .vtcw-link{
+        right:14px;
+        bottom:calc(14px + env(safe-area-inset-bottom));
+        padding:12px 14px;
+      }
+      .vtcw-link span{ display:none; }
+    }
+  `;
 
-  // ====== Estilos ======
-  const css = `:root{--vtcq-accent:${CFG.accent}} .vtcq-fab{position:fixed;right:20px;bottom:20px;z-index:9999;border:none;border-radius:999px;padding:14px 18px;background:var(--vtcq-accent);color:#061115;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,.35);cursor:pointer;display:flex;align-items:center;gap:10px}
-  .vtcq-fab svg{width:18px;height:18px}
-  .vtcq-panel{position:fixed;right:20px;bottom:84px;width:360px;max-width:92vw;background:#161a22;border:1px solid #232a35;border-radius:16px;box-shadow:0 12px 30px rgba(0,0,0,.35);overflow:hidden;display:none;z-index:9998;color:#e8edf2;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  .vtcq-panel.open{display:block}
-  .vtcq-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #232a35}
-  .vtcq-title{font-size:15px;font-weight:700;letter-spacing:.2px}
-  .vtcq-sub{font-size:12px;color:#9aa4b2}
-  .vtcq-close{background:transparent;border:none;color:#9aa4b2;cursor:pointer}
-  .vtcq-form{padding:14px 16px;display:grid;gap:10px}
-  .vtcq-form label{font-size:12px;color:#9aa4b2}
-  .vtcq-form input,.vtcq-form select,.vtcq-form textarea{width:100%;padding:10px 11px;border-radius:12px;border:1px solid #2a3240;background:#0f141b;color:#e8edf2}
-  .vtcq-form textarea{min-height:84px;resize:vertical}
-  .vtcq-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .vtcq-actions{display:flex;gap:8px;margin-top:2px}
-  .vtcq-btn{flex:1;border:none;border-radius:12px;padding:12px 14px;font-weight:700;cursor:pointer}
-  .vtcq-btn.primary{background:var(--vtcq-accent);color:#041416}
-  .vtcq-btn.ghost{background:#0f141b;border:1px solid #233042;color:#e8edf2}
-  .vtcq-note{font-size:11px;color:#9aa4b2;margin:-2px 0 4px}
-  .vtcq-msg{margin:8px 16px 14px;font-size:12px;display:none}
-  .vtcq-msg.show{display:block}
-  .vtcq-msg.ok{color:#a7ffd6}
-  .vtcq-msg.err{color:#ff5c5c}`;
-  const styleTag = document.createElement('style');
+  const styleTag = document.createElement("style");
   styleTag.textContent = css;
   document.head.appendChild(styleTag);
 
-  // ====== HTML ======
-  const wrapper = document.createElement('div');
-  wrapper.innerHTML = `
-    <button class="vtcq-fab" id="vtcqFab" aria-controls="vtcqPanel" aria-expanded="false" title="Cotizar con ${CFG.brand}">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-      Cotizar proyecto
-    </button>
-
-    <section class="vtcq-panel" id="vtcqPanel" role="dialog" aria-labelledby="vtcqTitle" aria-modal="true">
-      <div class="vtcq-header">
-        <div>
-          <div class="vtcq-title" id="vtcqTitle">Generar Cotización</div>
-          <div class="vtcq-sub">${CFG.brand}</div>
-        </div>
-        <button class="vtcq-close" id="vtcqClose" aria-label="Cerrar">✕</button>
-      </div>
-
-      <form class="vtcq-form" id="vtcqForm" novalidate>
-        <div class="vtcq-row">
-          <div>
-            <label>Nombre y apellido *</label>
-            <input name="client_name" autocomplete="name" required placeholder="Tu nombre" />
-          </div>
-          <div>
-            <label>Correo *</label>
-            <input name="client_email" type="email" autocomplete="email" required placeholder="tucorreo@dominio.com" />
-          </div>
-        </div>
-
-        <div class="vtcq-row">
-          <div>
-            <label>Teléfono</label>
-            <input name="client_phone" inputmode="tel" placeholder="Opcional" />
-          </div>
-          <div>
-            <label>Tipo de proyecto *</label>
-            <select name="project_type" required>
-              <option value="" disabled selected>Selecciona…</option>
-              <option>Arquitectura Residencial</option>
-              <option>Arquitectura Comercial</option>
-              <option>Renderizado / Visualización</option>
-              <option>Levantamiento 3D / Escáner</option>
-              <option>Consultoría / Expedientes</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label>Área (m²)</label>
-          <input name="area_m2" type="number" min="0" step="0.01" placeholder="Ejemplo: 150" />
-        </div>
-
-        <div>
-          <label>Alcance y detalles *</label>
-          <textarea name="project_scope" placeholder="Ubicación, plazos, requerimientos, etc." required></textarea>
-        </div>
-
-        <!-- Honeypot anti-spam -->
-        <input type="text" name="empresa" id="vtcqHp" style="display:none" tabindex="-1" autocomplete="off" />
-
-        <div class="vtcq-note">Los datos se registrarán en nuestro sistema.</div>
-        <div class="vtcq-actions">
-          <button type="button" class="vtcq-btn ghost" id="vtcqClear">Limpiar</button>
-          <button type="submit" class="vtcq-btn primary" id="vtcqSubmit">Enviar</button>
-        </div>
-      </form>
-
-      <div class="vtcq-msg" id="vtcqMsg"></div>
-    </section>`;
-
-  document.body.appendChild(wrapper);
-
-  // ====== Lógica ======
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const panel = $('#vtcqPanel'), fab = $('#vtcqFab'), closeBtn = $('#vtcqClose');
-  const form = $('#vtcqForm'), msg = $('#vtcqMsg');
-
-  function showMsg(text, ok=false){ msg.textContent = text; msg.className = 'vtcq-msg show ' + (ok?'ok':'err'); }
-  function toggle(){ const open = !panel.classList.contains('open'); panel.classList.toggle('open', open); fab.setAttribute('aria-expanded', String(open)); if(open) msg.className='vtcq-msg'; }
-
-  fab.addEventListener('click', toggle);
-  closeBtn.addEventListener('click', toggle);
-  $('#vtcqClear').addEventListener('click', ()=>{ form.reset(); msg.className='vtcq-msg'; });
-
-  function validate(){
-    const req = ['client_name','client_email','project_type','project_scope'];
-    for(const name of req){
-      const el = form.elements[name];
-      if(!el || !el.value || (el.tagName==='SELECT' && !el.value)){ el && el.focus(); showMsg('Completa los campos obligatorios (*)'); return false; }
-    }
-    const email = form.elements['client_email'].value.trim();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showMsg('Ingresa un correo válido'); return false; }
-    if(document.getElementById('vtcqHp').value.trim()!==''){ showMsg('Validación fallida.'); return false; } // honeypot
-    return true;
-  }
-
-  function buildPayload(){
-    const d = Object.fromEntries(new FormData(form).entries());
-    return {
-      token: CFG.token,
-      nombre: d.client_name?.trim(),
-      email: d.client_email?.trim(),
-      telefono: d.client_phone?.trim() || '',
-      servicio: d.project_type,
-      area_m2: d.area_m2?.trim() || '',
-      distrito: '',
-      presupuesto: '',
-      mensaje: d.project_scope?.trim(),
-      url_referencias: '',
-      origin: window.location.origin,
-      user_agent: navigator.userAgent
-    };
-  }
-
-  async function postToSheet(payload) {
-    try {
-      const r1 = await fetch(CFG.scriptUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload)
-      });
-      const text = await r1.text();
-      if (r1.ok && (text.trim() === '' || /"ok"\s*:\s*true/i.test(text))) return;
-      throw new Error(`HTTP ${r1.status} – ${text.slice(0,160)}`);
-    } catch (e) {
-      try {
-        const ok = navigator.sendBeacon(
-          CFG.scriptUrl,
-          new Blob([JSON.stringify(payload)], { type: 'text/plain;charset=utf-8' })
-        );
-        if (ok) return;
-        throw new Error('sendBeacon devolvió false');
-      } catch (e2) {
-        throw e2;
-      }
-    }
-  }
-
-  function downloadBackup(obj){
-    const ts = new Date().toISOString().replaceAll(':','-');
-    const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'text/plain' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `cotizacion_volestudio_${ts}.txt`;
-    document.body.appendChild(a); a.click(); a.remove();
-  }
-
-  form.addEventListener('submit', async (ev)=>{
-    ev.preventDefault(); if(!validate()) return;
-    const btn = $('#vtcqSubmit'); btn.disabled = true; btn.textContent = 'Enviando…'; msg.className='vtcq-msg';
-    try{
-      const payload = buildPayload();
-      await postToSheet(payload);
-      showMsg('¡Listo! Tus datos fueron registrados.', true);
-      form.reset();
-    }catch(err){
-      console.error(err);
-      showMsg('No pudimos registrar ahora. Se descargará un respaldo local.');
-      downloadBackup(buildPayload());
-    }finally{
-      btn.disabled = false; btn.textContent = 'Enviar';
-    }
-  });
-
-  // API pública para abrir/cerrar desde el menú
-  window.VTCQuote = {
-    open(){ if(!panel.classList.contains('open')) toggle(); },
-    close(){ if(panel.classList.contains('open')) toggle(); },
-    toggle,
-  };
+  const link = document.createElement("a");
+  link.className = "vtcw-link";
+  link.href = href;
+  link.target = "_blank";
+  link.rel = "noopener";
+  link.setAttribute("aria-label", "Cotizar por WhatsApp");
+  link.innerHTML = `
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+      <path d="M20.52 3.48A11.86 11.86 0 0 0 12.08 0C5.49 0 .14 5.35.14 11.94c0 2.1.55 4.16 1.6 5.97L.04 24l6.24-1.64a11.9 11.9 0 0 0 5.8 1.48h.01c6.58 0 11.94-5.35 11.94-11.94 0-3.19-1.25-6.19-3.51-8.42ZM12.09 21.8h-.01a9.86 9.86 0 0 1-5.03-1.38l-.36-.21-3.7.97.99-3.61-.23-.37a9.84 9.84 0 0 1-1.51-5.26c0-5.44 4.43-9.87 9.88-9.87a9.8 9.8 0 0 1 6.98 2.9 9.81 9.81 0 0 1 2.89 6.97c0 5.44-4.43 9.86-9.9 9.86Zm5.42-7.39c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.64.07-.3-.15-1.25-.46-2.38-1.47a8.92 8.92 0 0 1-1.65-2.06c-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.22 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.76-.72 2.01-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35Z"/>
+    </svg>
+    <span>Cotizar por WhatsApp</span>
+  `;
+  document.body.appendChild(link);
 })();

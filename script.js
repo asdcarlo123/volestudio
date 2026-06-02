@@ -381,6 +381,12 @@ function bindResizeObserver() {
   if (!refs) return;
   const { panel, body } = refs;
 
+  if (panel._detailResizeBound) {
+    sizeDetailCanvas();
+    return;
+  }
+  panel._detailResizeBound = true;
+
   let rafId = null;
   function onResize(){ cancelAnimationFrame(rafId); rafId = requestAnimationFrame(sizeDetailCanvas); }
   window.addEventListener("resize", onResize);
@@ -531,6 +537,8 @@ function closeOverlay(){
   overlay.setAttribute("aria-hidden","true");
   currentProject = -1;
   currentPics = [];
+  const img = overlay.querySelector("#detail-image");
+  if (img) img.removeAttribute("src");
   document.body.classList.remove("modal-open");
 }
 
