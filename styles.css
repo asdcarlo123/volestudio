@@ -226,6 +226,9 @@ body.modal-open { overflow: hidden; }
   gap: 22px;
   width: 100%;
   min-width: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .partner-logo{
@@ -234,7 +237,10 @@ body.modal-open { overflow: hidden; }
   max-width: 150px;
   max-height: 32px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(0,0,0,.32));
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  filter: none;
 }
 
 .partner-logo-pucp{ max-width: 132px; }
