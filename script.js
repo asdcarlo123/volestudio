@@ -257,11 +257,13 @@ function enableCardImageSwipe(card, media, img, dotsEl, pics, title) {
   let startY = 0;
   let moved = false;
   let pointerId = null;
+  let touchActive = false;
 
   const dots = Array.from(dotsEl.querySelectorAll(".gallery-preview-dot"));
+  const arrows = Array.from(media.querySelectorAll(".gallery-arrow"));
   const suppressOpen = () => {
     card.dataset.suppressOpen = "true";
-    window.setTimeout(() => { delete card.dataset.suppressOpen; }, 180);
+    window.setTimeout(() => { delete card.dataset.suppressOpen; }, 650);
   };
   const preloadAround = () => {
     [previewIdx + 1, previewIdx - 1].forEach((rawIdx) => {
@@ -281,45 +283,65 @@ function enableCardImageSwipe(card, media, img, dotsEl, pics, title) {
     });
     preloadAround();
   };
+  const goToDelta = (delta) => {
+    suppressOpen();
+    setPreview(previewIdx + delta);
+  };
+  const startGesture = (clientX, clientY) => {
+    startX = clientX;
+    startY = clientY;
+    moved = false;
+    card.classList.add("is-swiping");
+  };
+  const moveGesture = (clientX, clientY, ev) => {
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      moved = true;
+      ev?.preventDefault?.();
+    }
+  };
+  const endGesture = (clientX) => {
+    const dx = clientX - startX;
+    card.classList.remove("is-swiping");
+
+    if (!moved || Math.abs(dx) < 42) return;
+    goToDelta(dx < 0 ? 1 : -1);
+  };
+
+  arrows.forEach((arrow) => {
+    arrow.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      goToDelta(Number(arrow.dataset.delta || 1));
+    });
+  });
 
   dots.forEach((dot, dotIdx) => {
     dot.addEventListener("click", (ev) => {
       ev.preventDefault();
       ev.stopPropagation();
-      suppressOpen();
       setPreview(dotIdx);
+      suppressOpen();
     });
   });
 
   media.addEventListener("pointerdown", (ev) => {
     pointerId = ev.pointerId;
-    startX = ev.clientX;
-    startY = ev.clientY;
-    moved = false;
-    card.classList.add("is-swiping");
+    startGesture(ev.clientX, ev.clientY);
     media.setPointerCapture?.(pointerId);
   });
 
   media.addEventListener("pointermove", (ev) => {
     if (pointerId !== ev.pointerId) return;
-    const dx = ev.clientX - startX;
-    const dy = ev.clientY - startY;
-    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
-      moved = true;
-      ev.preventDefault();
-    }
+    moveGesture(ev.clientX, ev.clientY, ev);
   });
 
   const finishSwipe = (ev) => {
     if (pointerId !== null && ev.pointerId !== pointerId) return;
-    const dx = ev.clientX - startX;
-    card.classList.remove("is-swiping");
     if (pointerId !== null) media.releasePointerCapture?.(pointerId);
     pointerId = null;
-
-    if (!moved || Math.abs(dx) < 42) return;
-    suppressOpen();
-    setPreview(dx < 0 ? previewIdx + 1 : previewIdx - 1);
+    endGesture(ev.clientX);
   };
 
   media.addEventListener("pointerup", finishSwipe);
@@ -328,6 +350,29 @@ function enableCardImageSwipe(card, media, img, dotsEl, pics, title) {
     media.releasePointerCapture?.(ev.pointerId);
     pointerId = null;
   });
+  media.addEventListener("touchstart", (ev) => {
+    const touch = ev.touches[0];
+    if (!touch) return;
+    touchActive = true;
+    startGesture(touch.clientX, touch.clientY);
+  }, { passive: true });
+  media.addEventListener("touchmove", (ev) => {
+    if (!touchActive) return;
+    const touch = ev.touches[0];
+    if (!touch) return;
+    moveGesture(touch.clientX, touch.clientY, ev);
+  }, { passive: false });
+  media.addEventListener("touchend", (ev) => {
+    if (!touchActive) return;
+    const touch = ev.changedTouches[0];
+    touchActive = false;
+    if (!touch) return;
+    endGesture(touch.clientX);
+  }, { passive: true });
+  media.addEventListener("touchcancel", () => {
+    touchActive = false;
+    card.classList.remove("is-swiping");
+  }, { passive: true });
 
   setPreview(0);
 }
@@ -363,6 +408,20 @@ async function renderGallery() {
     media.appendChild(img);
 
     if (pics.length > 1) {
+      const prevArrow = document.createElement("button");
+      prevArrow.className = "gallery-arrow gallery-arrow-prev";
+      prevArrow.type = "button";
+      prevArrow.dataset.delta = "-1";
+      prevArrow.setAttribute("aria-label", "Foto anterior");
+      prevArrow.textContent = "\u2039";
+
+      const nextArrow = document.createElement("button");
+      nextArrow.className = "gallery-arrow gallery-arrow-next";
+      nextArrow.type = "button";
+      nextArrow.dataset.delta = "1";
+      nextArrow.setAttribute("aria-label", "Foto siguiente");
+      nextArrow.textContent = "\u203a";
+
       const dots = document.createElement("div");
       dots.className = "gallery-preview-dots";
       dots.setAttribute("role", "tablist");
@@ -372,9 +431,11 @@ async function renderGallery() {
         dot.className = `gallery-preview-dot${dotIdx === 0 ? " active" : ""}`;
         dot.type = "button";
         dot.setAttribute("aria-label", `Ver foto ${dotIdx + 1}`);
-        dot.setAttribute("aria-selected", dotIdx === 0 ? "true" : "false");
+          dot.setAttribute("aria-selected", dotIdx === 0 ? "true" : "false");
         dots.appendChild(dot);
       });
+      media.appendChild(prevArrow);
+      media.appendChild(nextArrow);
       media.appendChild(dots);
       enableCardImageSwipe(card, media, img, dots, pics, p.title);
     }
