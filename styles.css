@@ -193,9 +193,11 @@ body.modal-open { overflow: hidden; }
   transform: translateX(-50%);
   z-index: 16;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 18px;
-  width: min(760px, 82vw);
+  justify-content: center;
+  gap: 8px;
+  width: min(560px, 76vw);
   padding: 0;
   background: transparent;
   border: 0;
@@ -206,21 +208,22 @@ body.modal-open { overflow: hidden; }
 }
 
 .partners-label{
-  flex: 0 0 auto;
-  color: #0b2a7d;
+  color: rgba(255,255,255,.92);
   font-family: "Swis721 Blk BT", sans-serif;
-  font-size: 10px;
+  font-size: 9px;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
-  text-shadow: 0 1px 8px rgba(255,255,255,.75);
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 1px 8px rgba(0,0,0,.45);
 }
 
 .partners-logos{
   display: flex;
   align-items: center;
-  justify-content: space-around;
-  gap: 20px;
+  justify-content: center;
+  gap: 22px;
   width: 100%;
   min-width: 0;
 }
@@ -231,7 +234,7 @@ body.modal-open { overflow: hidden; }
   max-width: 150px;
   max-height: 32px;
   object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(255,255,255,.82)) drop-shadow(0 1px 6px rgba(0,0,0,.16));
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.32));
 }
 
 .partner-logo-pucp{ max-width: 132px; }
@@ -816,28 +819,31 @@ html.mobile-feed .footer-contacto{
 /* Tipografía móvil */
 @media (max-width: 768px){
   .partners-strip{
-    top: 72px;
-    right: 14px;
+    top: 74px;
+    right: auto;
     bottom: auto;
-    left: auto;
-    transform: none;
-    width: min(48vw, 184px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(70vw, 270px);
     padding: 0;
-    gap: 0;
+    gap: 6px;
   }
 
-  .partners-label{ display: none; }
+  .partners-label{
+    display: block;
+    font-size: 7px;
+  }
 
   .partners-logos{
-    justify-content: flex-end;
+    justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
   }
 
-  .partner-logo{ max-height: 16px; max-width: 62px; }
-  .partner-logo-pucp{ max-width: 58px; }
-  .partner-logo-albamar{ max-width: 88px; max-height: 18px; }
-  .partner-logo-clasem{ max-width: 54px; }
+  .partner-logo{ max-height: 15px; max-width: 58px; }
+  .partner-logo-pucp{ max-width: 56px; }
+  .partner-logo-albamar{ max-width: 84px; max-height: 17px; }
+  .partner-logo-clasem{ max-width: 52px; }
 
   .gallery-arrow{ display: none; }
 
