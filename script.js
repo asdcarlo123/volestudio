@@ -249,6 +249,89 @@ function getAllPics(p) {
   return out;
 }
 
+function enableCardImageSwipe(card, media, img, dotsEl, pics, title) {
+  if (!Array.isArray(pics) || pics.length <= 1) return;
+
+  let previewIdx = 0;
+  let startX = 0;
+  let startY = 0;
+  let moved = false;
+  let pointerId = null;
+
+  const dots = Array.from(dotsEl.querySelectorAll(".gallery-preview-dot"));
+  const suppressOpen = () => {
+    card.dataset.suppressOpen = "true";
+    window.setTimeout(() => { delete card.dataset.suppressOpen; }, 180);
+  };
+  const preloadAround = () => {
+    [previewIdx + 1, previewIdx - 1].forEach((rawIdx) => {
+      const next = pics[(rawIdx + pics.length) % pics.length];
+      if (!next) return;
+      const preloader = new Image();
+      preloader.src = next;
+    });
+  };
+  const setPreview = (rawIdx) => {
+    previewIdx = (rawIdx + pics.length) % pics.length;
+    img.src = pics[previewIdx];
+    img.alt = `${title || "Proyecto"} - imagen ${previewIdx + 1}`;
+    dots.forEach((dot, dotIdx) => {
+      dot.classList.toggle("active", dotIdx === previewIdx);
+      dot.setAttribute("aria-selected", dotIdx === previewIdx ? "true" : "false");
+    });
+    preloadAround();
+  };
+
+  dots.forEach((dot, dotIdx) => {
+    dot.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      suppressOpen();
+      setPreview(dotIdx);
+    });
+  });
+
+  media.addEventListener("pointerdown", (ev) => {
+    pointerId = ev.pointerId;
+    startX = ev.clientX;
+    startY = ev.clientY;
+    moved = false;
+    card.classList.add("is-swiping");
+    media.setPointerCapture?.(pointerId);
+  });
+
+  media.addEventListener("pointermove", (ev) => {
+    if (pointerId !== ev.pointerId) return;
+    const dx = ev.clientX - startX;
+    const dy = ev.clientY - startY;
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) {
+      moved = true;
+      ev.preventDefault();
+    }
+  });
+
+  const finishSwipe = (ev) => {
+    if (pointerId !== null && ev.pointerId !== pointerId) return;
+    const dx = ev.clientX - startX;
+    card.classList.remove("is-swiping");
+    if (pointerId !== null) media.releasePointerCapture?.(pointerId);
+    pointerId = null;
+
+    if (!moved || Math.abs(dx) < 42) return;
+    suppressOpen();
+    setPreview(dx < 0 ? previewIdx + 1 : previewIdx - 1);
+  };
+
+  media.addEventListener("pointerup", finishSwipe);
+  media.addEventListener("pointercancel", (ev) => {
+    card.classList.remove("is-swiping");
+    media.releasePointerCapture?.(ev.pointerId);
+    pointerId = null;
+  });
+
+  setPreview(0);
+}
+
 async function renderGallery() {
   await loadProjects();
   const { grid } = ensureGalleryDom();
@@ -266,12 +349,35 @@ async function renderGallery() {
     const card = document.createElement("figure");
     card.className = "gallery-item";
 
+    const pics = getAllPics(p).filter(Boolean);
+    const media = document.createElement("div");
+    media.className = "gallery-media";
+
     const img = document.createElement("img");
-    img.src = getCoverSrc(p);
+    img.src = pics[0] || getCoverSrc(p);
     img.alt = p.title || "Proyecto";
     img.loading = "lazy";
     img.decoding = "async";
     img.onerror = () => { card.remove(); };
+
+    media.appendChild(img);
+
+    if (pics.length > 1) {
+      const dots = document.createElement("div");
+      dots.className = "gallery-preview-dots";
+      dots.setAttribute("role", "tablist");
+      dots.setAttribute("aria-label", `Fotos de ${p.title || "proyecto"}`);
+      pics.forEach((_, dotIdx) => {
+        const dot = document.createElement("button");
+        dot.className = `gallery-preview-dot${dotIdx === 0 ? " active" : ""}`;
+        dot.type = "button";
+        dot.setAttribute("aria-label", `Ver foto ${dotIdx + 1}`);
+        dot.setAttribute("aria-selected", dotIdx === 0 ? "true" : "false");
+        dots.appendChild(dot);
+      });
+      media.appendChild(dots);
+      enableCardImageSwipe(card, media, img, dots, pics, p.title);
+    }
 
     const cap = document.createElement("figcaption");
     cap.className = "gallery-caption";
@@ -290,9 +396,12 @@ async function renderGallery() {
     cap.appendChild(h3);
     if (meta.textContent.trim() !== "") cap.appendChild(meta);
 
-    card.appendChild(img);
+    card.appendChild(media);
     card.appendChild(cap);
-    card.addEventListener("click", () => openProjectDetail(idx));
+    card.addEventListener("click", () => {
+      if (card.dataset.suppressOpen === "true") return;
+      openProjectDetail(idx);
+    });
 
     grid.appendChild(card);
   });
